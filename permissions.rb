@@ -355,6 +355,4 @@ permission = Permission.new(user.role_spec, context: [
 ])
 
 permission.can?('read')
-
-permission.can?(['read')
 =end
