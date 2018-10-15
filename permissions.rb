@@ -168,7 +168,7 @@ end
   sale = OpenStruct.new(id: 2, user_id: 1)
 
   user = OpenStruct.new(id: 1, role: {
-    'navigate' => { 'any' => ['billings'] },
+    'navigate' => { 'except' => ['billings'] },
     'export_as_csv' => { 'except' => ['sales'] }
   })
 
@@ -182,4 +182,10 @@ end
 
   user_permissions.policy.edit?(sale) #=> true
   user_permissions.to(:default).edit?(sale) #=> true
+
+  new_user_permissions = user_permissions.with(context: [
+    'dashboard', 'controllers', 'billings', 'index'
+  ])
+
+  new_user_permissions.features.can?('navigate') #=> false
 =end
