@@ -67,6 +67,32 @@ class TestPermissionsModel < Microtest::Test
     assert permissions.to(:numeric_subject){ 1 }.valid?
   end
 
+  test '#to (cache strategy)' do
+    permissions = Permissions::Model.build(@user, {}, context: [], policies: {
+      bar: BarPolicy
+    })
+
+    assert permissions.to(:bar).index?
+
+    permissions.to(:bar).class.class_eval do
+      class << self
+        alias_method :original_new, :new
+      end
+
+      def self.new(*args, **kargs)
+        raise
+      end
+    end
+
+    assert permissions.to(:bar).index?
+
+    permissions.to(:bar).class.class_eval do
+      class << self
+        alias_method :new, :original_new
+      end
+    end
+  end
+
   test '#policy (default)' do
     permissions = Permissions::Model.build(@user, {}, context: [], policies: {
                     default: FooPolicy

@@ -143,9 +143,7 @@ module Permissions
 
       return policy_klass.new(user, yield, features: features) if block_given?
 
-      policy_cache = @policies_cache[policy_key]
-
-      return policy_cache if policy_cache
+      return @policies_cache[policy_key] if @policies_cache[policy_key]
 
       policy_klass.new(user, features: features).tap do |instance|
         @policies_cache[policy_key] = instance if policy_klass != Policy
