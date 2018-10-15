@@ -27,8 +27,8 @@ class TestAdminPermissions < TestPermissions
     {
       "role": "admin",
       "features": {
-        "visit": { "any": true },
-        "save": { "any": true },
+        "navigate": { "any": true },
+        "refund": { "any": true },
         "export_as_csv": { "any": true }
       }
     }
@@ -38,14 +38,14 @@ class TestAdminPermissions < TestPermissions
     permissions1 = build_permissions('home')
     permissions2 = build_permissions(['home'])
 
-    assert permissions1.can?('visit')
-    assert permissions2.can?(['visit'])
-    assert permissions2.can?(['visit', 'save'])
+    assert permissions1.can?('navigate')
+    assert permissions2.can?(['navigate'])
+    assert permissions2.can?(['navigate', 'refund'])
     assert permissions1.can?('export_as_csv')
 
-    refute permissions1.cannot?('visit')
-    refute permissions2.cannot?(['visit'])
-    refute permissions2.cannot?(['visit', 'save'])
+    refute permissions1.cannot?('navigate')
+    refute permissions2.cannot?(['navigate'])
+    refute permissions2.cannot?(['navigate', 'refund'])
     refute permissions1.cannot?(['export_as_csv'])
   end
 end
@@ -53,19 +53,19 @@ end
 module ReadOnlyRoles
   A = <<~JSON
     {
-      "role": "visitonly",
+      "role": "navigateonly",
       "features": {
-        "visit": { "any": true }
+        "navigate": { "any": true }
       }
     }
   JSON
 
   B = <<~JSON
     {
-      "role": "visitonly2",
+      "role": "navigateonly2",
       "features": {
-        "visit": { "any": true },
-        "save": { "any": false },
+        "navigate": { "any": true },
+        "refund": { "any": false },
         "export_as_csv": { "any": false }
       }
     }
@@ -77,13 +77,13 @@ class TestReadonlyPermissions < TestPermissions
     permissions1 = build_permissions('home')
     permissions2 = build_permissions(['home'])
 
-    assert permissions1.can?('visit')
-    assert permissions2.can?(['visit'])
-    refute permissions1.cannot?('visit')
-    refute permissions2.cannot?(['visit'])
+    assert permissions1.can?('navigate')
+    assert permissions2.can?(['navigate'])
+    refute permissions1.cannot?('navigate')
+    refute permissions2.cannot?(['navigate'])
 
-    refute permissions2.can?(['visit', 'save'])
-    assert permissions2.cannot?(['visit', 'save'])
+    refute permissions2.can?(['navigate', 'refund'])
+    assert permissions2.cannot?(['navigate', 'refund'])
 
     refute permissions1.can?('export_as_csv')
     assert permissions1.cannot?(['export_as_csv'])
@@ -105,7 +105,7 @@ class TestUser0Permissions < TestPermissions
     {
       "role": "user0",
       "features": {
-        "visit": { "any": true },
+        "navigate": { "any": true },
         "export_as_csv": { "only": ["sales"] }
       }
     }
@@ -114,14 +114,14 @@ class TestUser0Permissions < TestPermissions
   def test_role_permissions
     permissions1 = build_permissions('home')
 
-    assert permissions1.can?('visit')
-    assert permissions1.can?(['visit'])
+    assert permissions1.can?('navigate')
+    assert permissions1.can?(['navigate'])
     refute permissions1.can?('export_as_csv')
 
     permissions2 = build_permissions(['sales'])
 
-    assert permissions2.can?(['visit'])
-    assert permissions2.can?(['visit', 'export_as_csv'])
+    assert permissions2.can?(['navigate'])
+    assert permissions2.can?(['navigate', 'export_as_csv'])
     assert permissions2.can?('export_as_csv')
   end
 end
@@ -131,7 +131,7 @@ class TestUser1Permissions < TestPermissions
     {
       "role": "user1",
       "features": {
-        "visit": { "only": ["sales", "commissionings", "releases"] },
+        "navigate": { "only": ["sales", "commissionings", "releases"] },
         "export_as_csv": { "only": ["sales"] }
       }
     }
@@ -140,26 +140,26 @@ class TestUser1Permissions < TestPermissions
   def test_role_permissions
     permissions1 = build_permissions('home')
 
-    refute permissions1.can?('visit')
+    refute permissions1.can?('navigate')
     refute permissions1.can?('export_as_csv')
 
     permissions2 = build_permissions('sales')
 
-    assert permissions2.can?('visit')
+    assert permissions2.can?('navigate')
     assert permissions2.can?('export_as_csv')
-    assert permissions2.can?(['visit', 'export_as_csv'])
+    assert permissions2.can?(['navigate', 'export_as_csv'])
 
     permissions3 = build_permissions('commissionings')
 
-    assert permissions3.can?('visit')
+    assert permissions3.can?('navigate')
     refute permissions3.can?('export_as_csv')
-    refute permissions3.can?(['visit', 'export_as_csv'])
+    refute permissions3.can?(['navigate', 'export_as_csv'])
 
     permissions4 = build_permissions('commissionings')
 
-    assert permissions4.can?('visit')
+    assert permissions4.can?('navigate')
     refute permissions4.can?('export_as_csv')
-    refute permissions4.can?(['visit', 'export_as_csv'])
+    refute permissions4.can?(['navigate', 'export_as_csv'])
   end
 end
 
@@ -168,7 +168,7 @@ class TestUser2Permissions < TestPermissions
     {
       "role": "user2",
       "features": {
-        "visit": { "only": ["sales", "commissionings", "releases"] },
+        "navigate": { "only": ["sales", "commissionings", "releases"] },
         "export_as_csv": { "except": ["sales"] }
       }
     }
@@ -177,26 +177,26 @@ class TestUser2Permissions < TestPermissions
   def test_role_permissions
     permissions1 = build_permissions('home')
 
-    refute permissions1.can?('visit')
+    refute permissions1.can?('navigate')
     assert permissions1.can?('export_as_csv') # Warning!!!
 
     permissions2 = build_permissions('sales')
 
-    assert permissions2.can?('visit')
+    assert permissions2.can?('navigate')
     refute permissions2.can?('export_as_csv')
-    refute permissions2.can?(['visit', 'export_as_csv'])
+    refute permissions2.can?(['navigate', 'export_as_csv'])
 
     permissions3 = build_permissions('commissionings')
 
-    assert permissions3.can?('visit')
+    assert permissions3.can?('navigate')
     assert permissions3.can?('export_as_csv')
-    assert permissions3.can?(['visit', 'export_as_csv'])
+    assert permissions3.can?(['navigate', 'export_as_csv'])
 
     permissions4 = build_permissions('commissionings')
 
-    assert permissions4.can?('visit')
+    assert permissions4.can?('navigate')
     assert permissions4.can?('export_as_csv')
-    assert permissions4.can?(['visit', 'export_as_csv'])
+    assert permissions4.can?(['navigate', 'export_as_csv'])
   end
 end
 
@@ -205,7 +205,7 @@ class TestUser3Permissions < TestPermissions
     {
       "role": "user3",
       "features": {
-        "visit": { "except": ["sales"] },
+        "navigate": { "except": ["sales"] },
         "export_as_csv": { "except": ["sales"] }
       }
     }
@@ -214,26 +214,26 @@ class TestUser3Permissions < TestPermissions
   def test_role_permissions
     permissions1 = build_permissions('home')
 
-    assert permissions1.can?('visit')
+    assert permissions1.can?('navigate')
     assert permissions1.can?('export_as_csv')
 
     permissions2 = build_permissions('sales')
 
-    refute permissions2.can?('visit')
+    refute permissions2.can?('navigate')
     refute permissions2.can?('export_as_csv')
-    refute permissions2.can?(['visit', 'export_as_csv'])
+    refute permissions2.can?(['navigate', 'export_as_csv'])
 
     permissions3 = build_permissions('commissionings')
 
-    assert permissions3.can?('visit')
+    assert permissions3.can?('navigate')
     assert permissions3.can?('export_as_csv')
-    assert permissions3.can?(['visit', 'export_as_csv'])
+    assert permissions3.can?(['navigate', 'export_as_csv'])
 
     permissions4 = build_permissions('commissionings')
 
-    assert permissions4.can?('visit')
+    assert permissions4.can?('navigate')
     assert permissions4.can?('export_as_csv')
-    assert permissions4.can?(['visit', 'export_as_csv'])
+    assert permissions4.can?(['navigate', 'export_as_csv'])
   end
 end
 
@@ -258,7 +258,7 @@ class TestPermissionsToHanamiClasses < TestPermissions
     {
       "role": "hanami_classes",
       "features": {
-        "visit": { "any": true },
+        "navigate": { "any": true },
         "export_as_csv": { "except": ["sales"] }
       }
     }
@@ -277,7 +277,7 @@ class TestPermissionsToHanamiClasses < TestPermissions
 
     permissions1 = build_permissions(controller_context)
 
-    assert permissions1.can?('visit')
+    assert permissions1.can?('navigate')
     refute permissions1.can?('export_as_csv')
 
     view_context = extract_permissions_context_from_hanami_class(
@@ -286,7 +286,7 @@ class TestPermissionsToHanamiClasses < TestPermissions
 
     permissions2 = build_permissions(view_context)
 
-    assert permissions2.can?('visit')
+    assert permissions2.can?('navigate')
     refute permissions2.can?('export_as_csv')
   end
 end
@@ -296,8 +296,8 @@ class TestPermissionsCacheStrategy < TestPermissions
     {
       "role": "cache_strategy",
       "features": {
-        "visit": { "any": ["true"] },
-        "save": { "except": ["sales"] }
+        "navigate": { "any": ["true"] },
+        "refund": { "except": ["sales"] }
       }
     }
   JSON
@@ -305,24 +305,24 @@ class TestPermissionsCacheStrategy < TestPermissions
   def test_cache_with_single_feature_verification
     permissions = build_permissions(['sales'])
 
-    assert permissions.can?('visit')
-    refute permissions.can?('save')
+    assert permissions.can?('navigate')
+    refute permissions.can?('refund')
 
     def permissions.permitted?(_feature_context); raise; end
 
-    assert permissions.can?('visit')
-    refute permissions.can?('save')
+    assert permissions.can?('navigate')
+    refute permissions.can?('refund')
   end
 
   def test_cache_with_multiple_features_verification
     permissions = build_permissions(['sales'])
 
-    assert permissions.can?('visit')
-    assert permissions.cannot?(['visit', 'save'])
+    assert permissions.can?('navigate')
+    assert permissions.cannot?(['navigate', 'refund'])
 
     def permissions.permitted?(_feature_context); raise; end
 
-    assert permissions.can?('visit')
-    assert permissions.cannot?(['visit', 'save'])
+    assert permissions.can?('navigate')
+    assert permissions.cannot?(['navigate', 'refund'])
   end
 end

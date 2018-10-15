@@ -45,12 +45,16 @@ module TestPermissionsPolicies
 
     class CustomPolicyB < Permissions::Policy
       def show?(record)
-        user.id == record.user_id
+        features.can?('navigate') && user.id == record.user_id
       end
     end
 
     def test_policy_result_when_receives_the_subject_as_a_query_argument
-      policy = CustomPolicyB.new(@user)
+      features = Permissions::FeaturesChecker.new(
+        { 'navigate' => { 'only' => ['test'] } }, context: ['test']
+      )
+
+      policy = CustomPolicyB.new(@user, features: features)
 
       assert policy.show?(@record_a) == true && policy.show?(@record_b) == false
     end
