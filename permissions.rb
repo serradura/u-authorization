@@ -1,55 +1,63 @@
 # frozen_string_literal: true
 
 module Permissions
-  class FeaturesChecker
-    attr_reader :role, :context
+  MapValuesAsDowncasedStrings = -> (values) do
+    Array(values).map { |value| String(value).downcase }.freeze
+  end
 
-    def initialize(role, context: [])
-      @role = role.dup.freeze
-      @cache = {}
-      @context = as_an_array_of_downcased_strings(context).freeze
-    end
+  module CheckFeaturePermission
+    extend self
 
-    def can?(features = nil)
-      normalized_features = as_an_array_of_downcased_strings(features)
-
-      cache_key = normalized_features.inspect
-
-      return @cache[cache_key] unless @cache[cache_key].nil?
-
-      @cache[cache_key] = normalized_features.all? do |feature|
-        permitted?(@role[feature])
-      end
-    end
-
-    def cannot?(features = nil)
-      !can?(features)
+    def call(context, role, features)
+      features.all? { |feature| permitted_role_feature?(context, role[feature]) }
     end
 
     private
 
-    def permitted?(feature_context)
-      return false if feature_context.nil?
+    def permitted_role_feature?(context, role_feature)
+      return false if role_feature.nil?
 
-      if !(any = feature_context['any']).nil?
+      if !(any = role_feature['any']).nil?
         any
-      elsif only = feature_context['only']
-        check_feature_permissions(only) { |perm| @context.include?(perm) }
-      elsif except = feature_context['except']
-        check_feature_permissions(except) { |perm| !@context.include?(perm) }
+      elsif only = role_feature['only']
+        check_feature_permissions(only) { |perm| context.include?(perm) }
+      elsif except = role_feature['except']
+        check_feature_permissions(except) { |perm| !context.include?(perm) }
       else
         raise NotImplementedError
       end
     end
 
     def check_feature_permissions(context_values)
-      as_an_array_of_downcased_strings(context_values).any? do |context_value|
+      MapValuesAsDowncasedStrings.(context_values).any? do |context_value|
         Array(context_value.split('.')).all? { |permission| yield(permission) }
       end
     end
+  end
 
-    def as_an_array_of_downcased_strings(values)
-      Array(values).map { |value| String(value).downcase }
+  class FeaturesChecker
+    attr_reader :role, :context
+
+    def initialize(role, context: [])
+      @role = role.dup.freeze
+      @cache = {}
+      @context = MapValuesAsDowncasedStrings.(context)
+    end
+
+    def can?(features = nil)
+      normalized_features = MapValuesAsDowncasedStrings.(features)
+
+      cache_key = normalized_features.inspect
+
+      return @cache[cache_key] unless @cache[cache_key].nil?
+
+      @cache[cache_key] = CheckFeaturePermission.call(
+        @context, @role, normalized_features
+      )
+    end
+
+    def cannot?(features = nil)
+      !can?(features)
     end
   end
 
@@ -129,18 +137,20 @@ module Permissions
 
       policy_klass.new(user, yield, features: features)
     end
+
+    def policy(key = :default, &block)
+      to(key, &block)
+    end
   end
 end
 
 =begin
-  user = User.find(user_id)
+  user = OpenStruct.new(id: 1, role: {
+    'navigate' => { 'any' => true },
+    'export_as_csv' => { 'except' => ['sales'] }
+  })
 
-  user.role_spec = {
-    'visit' => {'any' => true},
-    'export_as_csv' => {'except' => ['sales']}
-  }
-
-  user_permissions = Permissions::Model.build(user, user.role_spec, context: [
+  user_permissions = Permissions::Model.build(user, user.role, context: [
     'dashboard', 'controllers', 'sales', 'index'
   ])
 

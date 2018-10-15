@@ -5,8 +5,8 @@ class TestPermissionsModel < Microtest::Test
 
   def setup_all
     @user = OpenStruct.new(id: 1)
-    @user_role ={
-      'visit' => {'any' => true},
+    @user_role = {
+      'navigate' => {'any' => true},
       'export_as_csv' => {'except' => ['sales']}
     }
   end
@@ -16,7 +16,7 @@ class TestPermissionsModel < Microtest::Test
       'dashboard', 'controllers', 'sales', 'index'
     ])
 
-    assert permissions.features.can?('visit')
+    assert permissions.features.can?('navigate')
     refute permissions.features.can?('export_as_csv')
   end
 
@@ -31,7 +31,7 @@ class TestPermissionsModel < Microtest::Test
 
     refute permissions == new_permissions
 
-    assert new_permissions.features.can?('visit')
+    assert new_permissions.features.can?('navigate')
     assert new_permissions.features.can?('export_as_csv')
   end
 
@@ -76,5 +76,15 @@ class TestPermissionsModel < Microtest::Test
     permissions.add_policy(:numeric_subject, NumericSubjectPolicy)
 
     assert permissions.to(:numeric_subject){ 1 }.valid?
+  end
+
+  test '#policy' do
+    permissions = Permissions::Model.build(@user, {}, context: [], policies: {
+      default: FooPolicy, baz: BazPolicy
+    })
+
+    assert permissions.policy.class == permissions.to(:default).class
+    assert permissions.policy(:baz).class == permissions.to(:baz).class
+    assert permissions.policy(:unknow).class == permissions.to(:unknow).class
   end
 end
