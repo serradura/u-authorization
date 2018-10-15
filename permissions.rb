@@ -180,6 +180,6 @@ end
   user_permissions.features.can?('navigate') #=> true
   user_permissions.features.can?('export_as_csv') #=> false
 
-  user_permissions.to(:sales).edit?(sale) #=> true
   user_permissions.policy.edit?(sale) #=> true
+  user_permissions.to(:default).edit?(sale) #=> true
 =end
