@@ -92,6 +92,7 @@ module Permissions
     def initialize(user, features:, policies: {})
       @user = user
       @policies = {}
+      @policies_cache = {}
 
       if features.is_a?(FeaturesChecker)
         @features = features
@@ -102,10 +103,17 @@ module Permissions
       add_policies(policies)
     end
 
-    def with_context(values)
-      new_features = FeaturesChecker.new(features.role, context: values)
+    def with(context: nil, policies: nil)
+      if context.nil? && policies.nil?
+        raise ArgumentError, 'context or policies keywords args must be defined'
+      end
 
-      self.class.new(user, features: new_features, policies: @policies)
+      features_checker =
+        FeaturesChecker.new(features.role, context: context || @context)
+
+      self.class.new(
+        user, features: features_checker, policies: policies || @policies
+      )
     end
 
     def add_policy(key, policy_klass)
@@ -130,12 +138,18 @@ module Permissions
       self
     end
 
-    def to(policy_name)
-      policy_klass = @policies.fetch(policy_name, Policy)
+    def to(policy_key)
+      policy_klass = @policies.fetch(policy_key, Policy)
 
-      return policy_klass.new(user, features: features) unless block_given?
+      return policy_klass.new(user, yield, features: features) if block_given?
 
-      policy_klass.new(user, yield, features: features)
+      policy_cache = @policies_cache[policy_key]
+
+      return policy_cache if policy_cache
+
+      policy_klass.new(user, features: features).tap do |instance|
+        @policies_cache[policy_key] = instance if policy_klass != Policy
+      end
     end
 
     def policy(key = :default, &block)
@@ -145,16 +159,27 @@ module Permissions
 end
 
 =begin
+  class SalesPolicy < Permissions::Policy
+    def edit?(record)
+      user.id == record.user_id
+    end
+  end
+
+  sale = OpenStruct.new(id: 2, user_id: 1)
+
   user = OpenStruct.new(id: 1, role: {
-    'navigate' => { 'any' => true },
+    'navigate' => { 'any' => ['billings'] },
     'export_as_csv' => { 'except' => ['sales'] }
   })
 
-  user_permissions = Permissions::Model.build(user, user.role, context: [
-    'dashboard', 'controllers', 'sales', 'index'
-  ])
+  user_permissions = Permissions::Model.build(user, user.role,
+    context: ['dashboard', 'controllers', 'sales', 'index'],
+    policies: { default: SalesPolicy }
+  )
 
-  user_permissions.features.can?('visit') #=> true
+  user_permissions.features.can?('navigate') #=> true
   user_permissions.features.can?('export_as_csv') #=> false
-  user_permissions.to(:sales)
+
+  user_permissions.to(:sales).edit?(sale) #=> true
+  user_permissions.policy.edit?(sale) #=> true
 =end

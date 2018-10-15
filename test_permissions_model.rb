@@ -3,7 +3,7 @@
 class TestPermissionsModel < Microtest::Test
   require 'ostruct'
 
-  def setup_all
+  def setup
     @user = OpenStruct.new(id: 1)
     @user_role = {
       'navigate' => {'any' => true},
@@ -18,21 +18,6 @@ class TestPermissionsModel < Microtest::Test
 
     assert permissions.features.can?('navigate')
     refute permissions.features.can?('export_as_csv')
-  end
-
-  def test_with_new_context
-    permissions = Permissions::Model.build(@user, @user_role, context: [
-      'dashboard', 'controllers', 'sales', 'index'
-    ])
-
-    new_permissions = permissions.with_context([
-      'dashboard', 'controllers', 'releases', 'index'
-    ])
-
-    refute permissions == new_permissions
-
-    assert new_permissions.features.can?('navigate')
-    assert new_permissions.features.can?('export_as_csv')
   end
 
   class FooPolicy < Permissions::Policy
@@ -57,6 +42,10 @@ class TestPermissionsModel < Microtest::Test
     def valid?
       subject.is_a? Numeric
     end
+
+    def number
+      subject
+    end
   end
 
   test '#to' do
@@ -78,13 +67,66 @@ class TestPermissionsModel < Microtest::Test
     assert permissions.to(:numeric_subject){ 1 }.valid?
   end
 
-  test '#policy' do
+  test '#policy (default)' do
     permissions = Permissions::Model.build(@user, {}, context: [], policies: {
-      default: FooPolicy, baz: BazPolicy
-    })
+                    default: FooPolicy
+                  })
 
     assert permissions.policy.class == permissions.to(:default).class
+  end
+
+  test 'same behavior to #policy and #to methods' do
+    permissions = Permissions::Model.build(@user, {}, context: [], policies: {
+      default: FooPolicy, baz: BazPolicy, numeric_subject: NumericSubjectPolicy
+    })
+
     assert permissions.policy(:baz).class == permissions.to(:baz).class
     assert permissions.policy(:unknow).class == permissions.to(:unknow).class
+
+    numeric_subject_policy_a = permissions.to(:numeric_subject){ 1 }
+    numeric_subject_policy_b = permissions.policy(:numeric_subject){ 1 }
+
+    assert numeric_subject_policy_a.number == numeric_subject_policy_b.number
+  end
+
+  test '#with context:' do
+    permissions = Permissions::Model.build(@user, @user_role, context: [
+      'dashboard', 'controllers', 'sales', 'index'
+    ])
+
+    new_permissions = permissions.with(context: [
+      'dashboard', 'controllers', 'releases', 'index'
+    ])
+
+    refute permissions == new_permissions
+
+    assert new_permissions.features.can?('navigate')
+    assert new_permissions.features.can?('export_as_csv')
+  end
+
+  test '#with policies:' do
+    @user.id = nil
+
+    permissions = Permissions::Model.build(
+      @user, @user_role, context: ['sales'], policies: { default: FooPolicy }
+    )
+
+    refute permissions.policy.index?
+    assert permissions.features.cannot?('export_as_csv')
+
+    new_permissions = permissions.with(policies: { default: BarPolicy })
+
+    assert new_permissions.policy.index?
+    assert permissions.features.cannot?('export_as_csv')
+  end
+
+  test '#with context: nil, policies: nil' do
+    permissions = Permissions::Model.build(
+      @user, @user_role, context: ['sales'], policies: { default: FooPolicy }
+    )
+
+    new_permissions = permissions.with
+  rescue ArgumentError => e
+    assert true
   end
 end
