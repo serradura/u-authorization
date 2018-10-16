@@ -65,7 +65,7 @@ class TestAuthorizationModel < Microtest::Test
 
     authorization.add_policy(:numeric_subject, NumericSubjectPolicy)
 
-    assert authorization.to(:numeric_subject){ 1 }.valid?
+    assert authorization.to(:numeric_subject, subject: 1).valid?
   end
 
   test '#to (cache strategy)' do
@@ -112,8 +112,8 @@ class TestAuthorizationModel < Microtest::Test
     assert authorization.policy(:baz).class == authorization.to(:baz).class
     assert authorization.policy(:unknow).class == authorization.to(:unknow).class
 
-    numeric_subject_policy_a = authorization.to(:numeric_subject) { 1 }
-    numeric_subject_policy_b = authorization.policy(:numeric_subject) { 1 }
+    numeric_subject_policy_a = authorization.to(:numeric_subject, subject: 1)
+    numeric_subject_policy_b = authorization.policy(:numeric_subject, subject: 1)
 
     assert numeric_subject_policy_a.number == numeric_subject_policy_b.number
   end

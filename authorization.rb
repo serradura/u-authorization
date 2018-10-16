@@ -143,10 +143,10 @@ module Authorization
       self
     end
 
-    def to(policy_key)
+    def to(policy_key, subject: nil)
       policy_klass = @policies.fetch(policy_key, Policy)
 
-      return policy_klass.new(user, yield, permissions: permissions) if block_given?
+      return policy_klass.new(user, subject, permissions: permissions) if subject
 
       return @policies_cache[policy_key] if @policies_cache[policy_key]
 
@@ -155,8 +155,8 @@ module Authorization
       end
     end
 
-    def policy(key = :default, &block)
-      to(key, &block)
+    def policy(key = :default, subject: nil)
+      to(key, subject: subject)
     end
   end
 end
