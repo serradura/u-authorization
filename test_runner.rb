@@ -8,11 +8,11 @@ gemfile do
   gem 'u-test', '0.8.0'
 end
 
-require_relative 'permissions'
+require_relative 'authorization'
 
-require_relative 'test_permissions_features_checker'
-require_relative 'test_permissions_policy'
-require_relative 'test_permissions_model'
+require_relative 'test_authorization_permissions'
+require_relative 'test_authorization_policy'
+require_relative 'test_authorization_model'
 
 Microtest.call
 

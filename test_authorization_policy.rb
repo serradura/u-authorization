@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-module TestPermissionsPolicies
+module TestAuthorizationPolicies
   require 'ostruct'
 
   class StandardBehavior < Microtest::Test
-    class StardardPolicy < Permissions::Policy
+    class StardardPolicy < Authorization::Policy
     end
 
     def test_false_as_the_default_result_to_any_kind_of_query
@@ -32,7 +32,7 @@ module TestPermissionsPolicies
       @record_b = OpenStruct.new(user_id: 2)
     end
 
-    class CustomPolicyA < Permissions::Policy
+    class CustomPolicyA < Authorization::Policy
       def show?
         user.id == subject.user_id
       end
@@ -43,18 +43,18 @@ module TestPermissionsPolicies
       refute CustomPolicyA.new(@user, @record_b).show?
     end
 
-    class CustomPolicyB < Permissions::Policy
+    class CustomPolicyB < Authorization::Policy
       def show?(record)
-        features.can?('navigate') && user.id == record.user_id
+        permissions.to?('navigate') && user.id == record.user_id
       end
     end
 
     def test_policy_result_when_receives_the_subject_as_a_query_argument
-      features = Permissions::FeaturesChecker.new(
+      permissions = Authorization::Permissions.new(
         { 'navigate' => { 'only' => ['test'] } }, context: ['test']
       )
 
-      policy = CustomPolicyB.new(@user, features: features)
+      policy = CustomPolicyB.new(@user, permissions: permissions)
 
       assert policy.show?(@record_a) == true && policy.show?(@record_b) == false
     end
