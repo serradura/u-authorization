@@ -171,7 +171,7 @@ end
   role = OpenStruct.new(
     name: 'user',
     permissions: {
-      'navigate' => { 'except' => ['billings'] },
+      'visit' => { 'except' => ['billings'] },
       'export_as_csv' => { 'except' => ['sales'] }
     }
   )
@@ -185,7 +185,7 @@ end
     policies: { default: SalesPolicy }
   )
 
-  authorization.permissions.to?('navigate') #=> true
+  authorization.permissions.to?('visit') #=> true
   authorization.permissions.to?('export_as_csv') #=> false
 
   authorization.policy.edit?(charge) #=> true
@@ -195,5 +195,5 @@ end
     'dashboard', 'controllers', 'billings', 'index'
   ])
 
-  new_authorization.permissions.to?('navigate') #=> false
+  new_authorization.permissions.to?('visit') #=> false
 =end

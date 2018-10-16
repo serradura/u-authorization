@@ -6,7 +6,7 @@ class TestAuthorizationModel < Microtest::Test
   def setup
     @user = OpenStruct.new(id: 1)
     @role_permissions = {
-      'navigate' => {'any' => true},
+      'visit' => {'any' => true},
       'export_as_csv' => {'except' => ['sales']}
     }
   end
@@ -17,7 +17,7 @@ class TestAuthorizationModel < Microtest::Test
       context: ['dashboard', 'controllers', 'sales', 'index']
     )
 
-    assert authorization.permissions.to?('navigate')
+    assert authorization.permissions.to?('visit')
     refute authorization.permissions.to?('export_as_csv')
   end
 
@@ -130,7 +130,7 @@ class TestAuthorizationModel < Microtest::Test
 
     refute authorization == new_authorization
 
-    assert new_authorization.permissions.to?('navigate')
+    assert new_authorization.permissions.to?('visit')
     assert new_authorization.permissions.to?('export_as_csv')
   end
 

@@ -27,7 +27,7 @@ class TestAdminPermissions < TestAuthorizationPermissions
     {
       "name": "admin",
       "permissions": {
-        "navigate": { "any": true },
+        "visit": { "any": true },
         "refund": { "any": true },
         "export_as_csv": { "any": true }
       }
@@ -38,14 +38,14 @@ class TestAdminPermissions < TestAuthorizationPermissions
     permissions1 = build_permissions('home')
     permissions2 = build_permissions(['home'])
 
-    assert permissions1.to?('navigate')
-    assert permissions2.to?(['navigate'])
-    assert permissions2.to?(['navigate', 'refund'])
+    assert permissions1.to?('visit')
+    assert permissions2.to?(['visit'])
+    assert permissions2.to?(['visit', 'refund'])
     assert permissions1.to?('export_as_csv')
 
-    refute permissions1.to_not?('navigate')
-    refute permissions2.to_not?(['navigate'])
-    refute permissions2.to_not?(['navigate', 'refund'])
+    refute permissions1.to_not?('visit')
+    refute permissions2.to_not?(['visit'])
+    refute permissions2.to_not?(['visit', 'refund'])
     refute permissions1.to_not?(['export_as_csv'])
   end
 end
@@ -53,18 +53,18 @@ end
 module ReadOnlyRoles
   A = <<~JSON
     {
-      "name": "navigateonly",
+      "name": "visitonly",
       "permissions": {
-        "navigate": { "any": true }
+        "visit": { "any": true }
       }
     }
   JSON
 
   B = <<~JSON
     {
-      "name": "navigateonly2",
+      "name": "visitonly2",
       "permissions": {
-        "navigate": { "any": true },
+        "visit": { "any": true },
         "refund": { "any": false },
         "export_as_csv": { "any": false }
       }
@@ -77,13 +77,13 @@ class TestReadonlyPermissions < TestAuthorizationPermissions
     permissions1 = build_permissions('home')
     permissions2 = build_permissions(['home'])
 
-    assert permissions1.to?('navigate')
-    assert permissions2.to?(['navigate'])
-    refute permissions1.to_not?('navigate')
-    refute permissions2.to_not?(['navigate'])
+    assert permissions1.to?('visit')
+    assert permissions2.to?(['visit'])
+    refute permissions1.to_not?('visit')
+    refute permissions2.to_not?(['visit'])
 
-    refute permissions2.to?(['navigate', 'refund'])
-    assert permissions2.to_not?(['navigate', 'refund'])
+    refute permissions2.to?(['visit', 'refund'])
+    assert permissions2.to_not?(['visit', 'refund'])
 
     refute permissions1.to?('export_as_csv')
     assert permissions1.to_not?(['export_as_csv'])
@@ -105,7 +105,7 @@ class TestUser0Permissions < TestAuthorizationPermissions
     {
       "name": "user0",
       "permissions": {
-        "navigate": { "any": true },
+        "visit": { "any": true },
         "export_as_csv": { "only": ["sales"] }
       }
     }
@@ -114,14 +114,14 @@ class TestUser0Permissions < TestAuthorizationPermissions
   def test_role_permissions
     permissions1 = build_permissions('home')
 
-    assert permissions1.to?('navigate')
-    assert permissions1.to?(['navigate'])
+    assert permissions1.to?('visit')
+    assert permissions1.to?(['visit'])
     refute permissions1.to?('export_as_csv')
 
     permissions2 = build_permissions(['sales'])
 
-    assert permissions2.to?(['navigate'])
-    assert permissions2.to?(['navigate', 'export_as_csv'])
+    assert permissions2.to?(['visit'])
+    assert permissions2.to?(['visit', 'export_as_csv'])
     assert permissions2.to?('export_as_csv')
   end
 end
@@ -131,7 +131,7 @@ class TestUser1Permissions < TestAuthorizationPermissions
     {
       "name": "user1",
       "permissions": {
-        "navigate": { "only": ["sales", "commissionings", "releases"] },
+        "visit": { "only": ["sales", "commissionings", "releases"] },
         "export_as_csv": { "only": ["sales"] }
       }
     }
@@ -140,26 +140,26 @@ class TestUser1Permissions < TestAuthorizationPermissions
   def test_role_permissions
     permissions1 = build_permissions('home')
 
-    refute permissions1.to?('navigate')
+    refute permissions1.to?('visit')
     refute permissions1.to?('export_as_csv')
 
     permissions2 = build_permissions('sales')
 
-    assert permissions2.to?('navigate')
+    assert permissions2.to?('visit')
     assert permissions2.to?('export_as_csv')
-    assert permissions2.to?(['navigate', 'export_as_csv'])
+    assert permissions2.to?(['visit', 'export_as_csv'])
 
     permissions3 = build_permissions('commissionings')
 
-    assert permissions3.to?('navigate')
+    assert permissions3.to?('visit')
     refute permissions3.to?('export_as_csv')
-    refute permissions3.to?(['navigate', 'export_as_csv'])
+    refute permissions3.to?(['visit', 'export_as_csv'])
 
     permissions4 = build_permissions('commissionings')
 
-    assert permissions4.to?('navigate')
+    assert permissions4.to?('visit')
     refute permissions4.to?('export_as_csv')
-    refute permissions4.to?(['navigate', 'export_as_csv'])
+    refute permissions4.to?(['visit', 'export_as_csv'])
   end
 end
 
@@ -168,7 +168,7 @@ class TestUser2Permissions < TestAuthorizationPermissions
     {
       "name": "user2",
       "permissions": {
-        "navigate": { "only": ["sales", "commissionings", "releases"] },
+        "visit": { "only": ["sales", "commissionings", "releases"] },
         "export_as_csv": { "except": ["sales"] }
       }
     }
@@ -177,26 +177,26 @@ class TestUser2Permissions < TestAuthorizationPermissions
   def test_role_permissions
     permissions1 = build_permissions('home')
 
-    refute permissions1.to?('navigate')
+    refute permissions1.to?('visit')
     assert permissions1.to?('export_as_csv') # Warning!!!
 
     permissions2 = build_permissions('sales')
 
-    assert permissions2.to?('navigate')
+    assert permissions2.to?('visit')
     refute permissions2.to?('export_as_csv')
-    refute permissions2.to?(['navigate', 'export_as_csv'])
+    refute permissions2.to?(['visit', 'export_as_csv'])
 
     permissions3 = build_permissions('commissionings')
 
-    assert permissions3.to?('navigate')
+    assert permissions3.to?('visit')
     assert permissions3.to?('export_as_csv')
-    assert permissions3.to?(['navigate', 'export_as_csv'])
+    assert permissions3.to?(['visit', 'export_as_csv'])
 
     permissions4 = build_permissions('commissionings')
 
-    assert permissions4.to?('navigate')
+    assert permissions4.to?('visit')
     assert permissions4.to?('export_as_csv')
-    assert permissions4.to?(['navigate', 'export_as_csv'])
+    assert permissions4.to?(['visit', 'export_as_csv'])
   end
 end
 
@@ -205,7 +205,7 @@ class TestUser3Permissions < TestAuthorizationPermissions
     {
       "name": "user3",
       "permissions": {
-        "navigate": { "except": ["sales"] },
+        "visit": { "except": ["sales"] },
         "export_as_csv": { "except": ["sales"] }
       }
     }
@@ -214,26 +214,26 @@ class TestUser3Permissions < TestAuthorizationPermissions
   def test_role_permissions
     permissions1 = build_permissions('home')
 
-    assert permissions1.to?('navigate')
+    assert permissions1.to?('visit')
     assert permissions1.to?('export_as_csv')
 
     permissions2 = build_permissions('sales')
 
-    refute permissions2.to?('navigate')
+    refute permissions2.to?('visit')
     refute permissions2.to?('export_as_csv')
-    refute permissions2.to?(['navigate', 'export_as_csv'])
+    refute permissions2.to?(['visit', 'export_as_csv'])
 
     permissions3 = build_permissions('commissionings')
 
-    assert permissions3.to?('navigate')
+    assert permissions3.to?('visit')
     assert permissions3.to?('export_as_csv')
-    assert permissions3.to?(['navigate', 'export_as_csv'])
+    assert permissions3.to?(['visit', 'export_as_csv'])
 
     permissions4 = build_permissions('commissionings')
 
-    assert permissions4.to?('navigate')
+    assert permissions4.to?('visit')
     assert permissions4.to?('export_as_csv')
-    assert permissions4.to?(['navigate', 'export_as_csv'])
+    assert permissions4.to?(['visit', 'export_as_csv'])
   end
 end
 
@@ -258,7 +258,7 @@ class TestAuthorizationPermissionsToHanamiClasses < TestAuthorizationPermissions
     {
       "name": "hanami_classes",
       "permissions": {
-        "navigate": { "any": true },
+        "visit": { "any": true },
         "export_as_csv": { "except": ["sales"] }
       }
     }
@@ -277,7 +277,7 @@ class TestAuthorizationPermissionsToHanamiClasses < TestAuthorizationPermissions
 
     permissions1 = build_permissions(controller_context)
 
-    assert permissions1.to?('navigate')
+    assert permissions1.to?('visit')
     refute permissions1.to?('export_as_csv')
 
     view_context = extract_permissions_context_from_hanami_class(
@@ -286,7 +286,7 @@ class TestAuthorizationPermissionsToHanamiClasses < TestAuthorizationPermissions
 
     permissions2 = build_permissions(view_context)
 
-    assert permissions2.to?('navigate')
+    assert permissions2.to?('visit')
     refute permissions2.to?('export_as_csv')
   end
 end
@@ -296,7 +296,7 @@ class TestAuthorizationPermissionsCacheStrategy < TestAuthorizationPermissions
     {
       "name": "cache_strategy",
       "permissions": {
-        "navigate": { "any": ["true"] },
+        "visit": { "any": ["true"] },
         "refund": { "except": ["sales"] }
       }
     }
@@ -305,24 +305,24 @@ class TestAuthorizationPermissionsCacheStrategy < TestAuthorizationPermissions
   def test_cache_with_single_feature_verification
     permissions = build_permissions(['sales'])
 
-    assert permissions.to?('navigate')
+    assert permissions.to?('visit')
     refute permissions.to?('refund')
 
     def permissions.permitted?(_feature_context); raise; end
 
-    assert permissions.to?('navigate')
+    assert permissions.to?('visit')
     refute permissions.to?('refund')
   end
 
   def test_cache_with_multiple_features_verification
     permissions = build_permissions(['sales'])
 
-    assert permissions.to?('navigate')
-    assert permissions.to_not?(['navigate', 'refund'])
+    assert permissions.to?('visit')
+    assert permissions.to_not?(['visit', 'refund'])
 
     def permissions.permitted?(_feature_context); raise; end
 
-    assert permissions.to?('navigate')
-    assert permissions.to_not?(['navigate', 'refund'])
+    assert permissions.to?('visit')
+    assert permissions.to_not?(['visit', 'refund'])
   end
 end

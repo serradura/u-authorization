@@ -45,13 +45,13 @@ module TestAuthorizationPolicies
 
     class CustomPolicyB < Authorization::Policy
       def show?(record)
-        permissions.to?('navigate') && user.id == record.user_id
+        permissions.to?('visit') && user.id == record.user_id
       end
     end
 
     def test_policy_result_when_receives_the_subject_as_a_query_argument
       permissions = Authorization::Permissions.new(
-        { 'navigate' => { 'only' => ['test'] } }, context: ['test']
+        { 'visit' => { 'only' => ['test'] } }, context: ['test']
       )
 
       policy = CustomPolicyB.new(@user, permissions: permissions)
