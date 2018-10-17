@@ -1,5 +1,7 @@
 # authorization.rb
 
+Simple authorization library and role managment for ruby.
+
 ## Usage
 
 ```ruby
