@@ -52,20 +52,22 @@ module Authorization
       @cache = {}
     end
 
-    def to?(features = nil)
+    def to?(features = nil, context: nil)
       required_features = MapValuesAsDowncasedStrings.(features)
 
       cache_key = required_features.inspect
 
-      return @cache[cache_key] unless @cache[cache_key].nil?
+      return @cache[cache_key] if @cache[cache_key].nil? && !context.nil?
+
+      custom_context = MapValuesAsDowncasedStrings.(context) if context
 
       @cache[cache_key] = CheckRolePermission.call(
-        @context, @role, required_features
+        (custom_context || @context), @role, required_features
       )
     end
 
-    def to_not?(features = nil)
-      !to?(features)
+    def to_not?(features = nil, context: nil)
+      !to?(features, context: context)
     end
   end
 
@@ -112,7 +114,7 @@ module Authorization
       add_policies(policies)
     end
 
-    def with(context: nil, policies: nil)
+    def map(context: nil, policies: nil)
       if context.nil? && policies.nil?
         raise ArgumentError, 'context or policies keywords args must be defined'
       end
@@ -160,40 +162,3 @@ module Authorization
     end
   end
 end
-
-=begin
-  class SalesPolicy < Authorization::Policy
-    def edit?(record)
-      user.id == record.user_id
-    end
-  end
-
-  role = OpenStruct.new(
-    name: 'user',
-    permissions: {
-      'visit' => { 'except' => ['billings'] },
-      'export_as_csv' => { 'except' => ['sales'] }
-    }
-  )
-
-  user = OpenStruct.new(id: 1, role: role)
-
-  charge = OpenStruct.new(id: 2, user_id: user.id)
-
-  authorization = Authorization::Model.build(user, user.role.permissions,
-    context: ['dashboard', 'controllers', 'sales', 'index'],
-    policies: { default: SalesPolicy }
-  )
-
-  authorization.permissions.to?('visit') #=> true
-  authorization.permissions.to?('export_as_csv') #=> false
-
-  authorization.policy.edit?(charge) #=> true
-  authorization.to(:default).edit?(charge) #=> true
-
-  new_authorization = authorization.with(context: [
-    'dashboard', 'controllers', 'billings', 'index'
-  ])
-
-  new_authorization.permissions.to?('visit') #=> false
-=end

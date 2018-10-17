@@ -118,13 +118,13 @@ class TestAuthorizationModel < Microtest::Test
     assert numeric_subject_policy_a.number == numeric_subject_policy_b.number
   end
 
-  test '#with context:' do
+  test '#map context:' do
     authorization = Authorization::Model.build(
       @user, @role_permissions,
       context: ['dashboard', 'controllers', 'sales', 'index']
     )
 
-    new_authorization = authorization.with(context: [
+    new_authorization = authorization.map(context: [
       'dashboard', 'controllers', 'releases', 'index'
     ])
 
@@ -134,7 +134,7 @@ class TestAuthorizationModel < Microtest::Test
     assert new_authorization.permissions.to?('export_as_csv')
   end
 
-  test '#with policies:' do
+  test '#map policies:' do
     @user.id = nil
 
     authorization = Authorization::Model.build(
@@ -145,19 +145,19 @@ class TestAuthorizationModel < Microtest::Test
     refute authorization.policy.index?
     assert authorization.permissions.to_not?('export_as_csv')
 
-    new_authorization = authorization.with(policies: { default: BarPolicy })
+    new_authorization = authorization.map(policies: { default: BarPolicy })
 
     assert new_authorization.policy.index?
     assert authorization.permissions.to_not?('export_as_csv')
   end
 
-  test '#with context: nil, policies: nil' do
+  test '#map context: nil, policies: nil' do
     authorization = Authorization::Model.build(
       @user, @role_permissions,
       context: ['sales'], policies: { default: FooPolicy }
     )
 
-    authorization.with()
+    authorization.map()
   rescue ArgumentError => e
     assert true
   end

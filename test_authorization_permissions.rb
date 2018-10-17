@@ -123,6 +123,13 @@ class TestUser0Permissions < TestAuthorizationPermissions
     assert permissions2.to?(['visit'])
     assert permissions2.to?(['visit', 'export_as_csv'])
     assert permissions2.to?('export_as_csv')
+
+    # Testing with a custom context
+    assert permissions1.to?('export_as_csv', context: ['sales'])
+    refute permissions1.to_not?('export_as_csv', context: ['sales'])
+
+    refute permissions2.to?('export_as_csv', context: ['home'])
+    assert permissions2.to_not?('export_as_csv', context: ['home'])
   end
 end
 
