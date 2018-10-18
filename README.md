@@ -69,4 +69,7 @@ $ gem install u-authorization
   ])
 
   new_authorization.permissions.to?('visit') #=> false
+
+  authorization == new_authorization
+  #=> false
 ```
