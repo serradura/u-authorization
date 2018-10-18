@@ -42,10 +42,6 @@ Simple authorization library and role managment for ruby.
   authorization.policy.edit?(charge)
   #=> true
 
-  # Verifying the role permissions for a custom context
-  authorization.permissions.to?('visit', context: 'billings')
-  #=> false
-
   # Cloning the authorization changing only its context.
   new_authorization = authorization.map(context: [
     'dashboard', 'controllers', 'billings', 'index'

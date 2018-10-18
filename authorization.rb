@@ -52,22 +52,20 @@ module Authorization
       @cache = {}
     end
 
-    def to?(features = nil, context: nil)
+    def to?(features = nil)
       required_features = MapValuesAsDowncasedStrings.(features)
 
       cache_key = required_features.inspect
 
-      return @cache[cache_key] if @cache[cache_key].nil? && !context.nil?
-
-      custom_context = MapValuesAsDowncasedStrings.(context) if context
+      return @cache[cache_key] unless @cache[cache_key].nil?
 
       @cache[cache_key] = CheckRolePermission.call(
-        (custom_context || @context), @role, required_features
+        @context, @role, required_features
       )
     end
 
-    def to_not?(features = nil, context: nil)
-      !to?(features, context: context)
+    def to_not?(features = nil)
+      !to?(features)
     end
   end
 
