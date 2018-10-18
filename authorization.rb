@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module Authorization
+  VERSION = '1.0.0'
+
   MapValuesAsDowncasedStrings = -> (values) do
     Array(values).map { |value| String(value).downcase }
   end

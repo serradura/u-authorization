@@ -1,6 +1,27 @@
-# authorization.rb
+# u-authorization.rb
 
-Simple authorization library and role managment for ruby.
+Simple authorization library and role managment for Ruby.
+
+## Prerequisites
+
+> Ruby >= 2.2.2
+
+## Installation
+
+Add this line to your application's Gemfile:
+```
+gem 'u-authorization'
+```
+
+And then execute:
+```
+$ bundle
+```
+
+Or install it yourself as:
+```
+$ gem install u-authorization
+```
 
 ## Usage
 

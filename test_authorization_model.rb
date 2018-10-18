@@ -152,13 +152,15 @@ class TestAuthorizationModel < Microtest::Test
   end
 
   test '#map context: nil, policies: nil' do
-    authorization = Authorization::Model.build(
-      @user, @role_permissions,
-      context: ['sales'], policies: { default: FooPolicy }
-    )
+    begin
+      authorization = Authorization::Model.build(
+        @user, @role_permissions,
+        context: ['sales'], policies: { default: FooPolicy }
+      )
 
-    authorization.map()
-  rescue ArgumentError => e
-    assert true
+      authorization.map()
+    rescue ArgumentError => e
+      assert true
+    end
   end
 end
