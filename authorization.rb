@@ -49,9 +49,8 @@ module Authorization
 
     def initialize(role_permissions, context: [])
       @role = role_permissions.dup.freeze
-      @context = MapValuesAsDowncasedStrings.(context).freeze
-
       @cache = {}
+      @context = MapValuesAsDowncasedStrings.(context).freeze
     end
 
     def to?(features = nil)
