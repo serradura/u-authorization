@@ -95,11 +95,17 @@ class TestAuthorizationModel < Microtest::Test
   end
 
   test '#policy (default)' do
-    authorization = Authorization::Model.build(
+    authorization1 = Authorization::Model.build(
       @user, {}, context: [], policies: { default: FooPolicy }
     )
 
-    assert authorization.policy.class == authorization.to(:default).class
+    assert authorization1.policy.class == authorization1.to(:default).class
+
+    authorization2 = Authorization::Model.build(
+      @user, {}, context: [], policies: { default: :foo, foo: FooPolicy }
+    )
+
+    assert authorization2.policy.class == authorization2.to(:default).class
   end
 
   test 'same behavior to #policy and #to methods' do
@@ -159,7 +165,7 @@ class TestAuthorizationModel < Microtest::Test
       )
 
       authorization.map()
-    rescue ArgumentError => e
+    rescue ArgumentError => _e
       assert true
     end
   end

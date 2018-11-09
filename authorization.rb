@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Authorization
-  VERSION = '1.0.0'
+  VERSION = '1.1.0'
 
   MapValuesAsDowncasedStrings = -> (values) do
     Array(values).map { |value| String(value).downcase }
@@ -130,7 +130,9 @@ module Authorization
     def add_policy(key, policy_klass)
       raise ArgumentError, 'key must be a Symbol' unless key.is_a?(Symbol)
 
-      @policies[key] ||= Policy.type(policy_klass)
+      default_ref = key == :default && policy_klass.is_a?(Symbol)
+
+      @policies[key] ||= default_ref ? policy_klass : Policy.type(policy_klass)
 
       self
     end
@@ -140,13 +142,13 @@ module Authorization
         raise ArgumentError, "policies must be a Hash (key => #{Policy.name})"
       end
 
-      new_policies.each &method(:add_policy)
+      new_policies.each(&method(:add_policy))
 
       self
     end
 
     def to(policy_key, subject: nil)
-      policy_klass = @policies.fetch(policy_key, Policy)
+      policy_klass = fetch_policy(policy_key)
 
       return policy_klass.new(user, subject, permissions: permissions) if subject
 
@@ -159,6 +161,13 @@ module Authorization
 
     def policy(key = :default, subject: nil)
       to(key, subject: subject)
+    end
+
+    private
+
+    def fetch_policy(policy_key)
+      value = @policies.fetch(policy_key, Policy)
+      value.is_a?(Symbol) ? fetch_policy(value) : value
     end
   end
 end
