@@ -52,6 +52,11 @@ $ gem install u-authorization
   authorization.permissions.to?('visit')         #=> true
   authorization.permissions.to?('export_as_csv') #=> false
 
+  # Verifying permission for a given feature to different contexts
+  has_permission_to = authorization.permissions.to('export_as_csv')
+  has_permission_to.context?('billings') #=> true
+  has_permission_to.context?('sales')    #=> false
+
   charge = OpenStruct.new(id: 2, user_id: user.id)
 
   # The #to() method fetch and build a policy.

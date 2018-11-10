@@ -5,7 +5,7 @@ require 'bundler/inline'
 gemfile do
   source 'https://rubygems.org'
 
-  gem 'u-test', '0.8.0'
+  gem 'u-test', '0.9.0'
 end
 
 require_relative 'authorization'

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Authorization
-  VERSION = '1.1.0'
+  VERSION = '1.2.0'
 
   MapValuesAsDowncasedStrings = -> (values) do
     Array(values).map { |value| String(value).downcase }
@@ -38,6 +38,19 @@ module Authorization
     end
   end
 
+  class FeaturesPermissionChecker
+    attr_reader :required_features
+
+    def initialize(role, features)
+      @role = role
+      @required_features = MapValuesAsDowncasedStrings.(features)
+    end
+
+    def context?(context)
+      CheckRolePermission.call(context, @role, @required_features)
+    end
+  end
+
   class Permissions
     attr_reader :role, :context
 
@@ -53,16 +66,18 @@ module Authorization
       @context = MapValuesAsDowncasedStrings.(context).freeze
     end
 
-    def to?(features = nil)
-      required_features = MapValuesAsDowncasedStrings.(features)
+    def to(features)
+      FeaturesPermissionChecker.new(@role, features)
+    end
 
-      cache_key = required_features.inspect
+    def to?(features = nil)
+      has_permission_to = to(features)
+
+      cache_key = has_permission_to.required_features.inspect
 
       return @cache[cache_key] unless @cache[cache_key].nil?
 
-      @cache[cache_key] = CheckRolePermission.call(
-        @context, @role, required_features
-      )
+      @cache[cache_key] = has_permission_to.context?(@context)
     end
 
     def to_not?(features = nil)
@@ -77,8 +92,8 @@ module Authorization
       raise ArgumentError, "policy must be a #{self.name}"
     end
 
-    def initialize(user, subject = nil, permissions: nil)
-      @user = user
+    def initialize(context, subject = nil, permissions: nil)
+      @context = context
       @subject = subject
       @permissions = permissions
     end
@@ -90,9 +105,13 @@ module Authorization
 
     private
 
-    def user; @user; end
-    def subject; @subject; end
     def permissions; @permissions; end
+    def context; @context; end
+    def subject; @subject; end
+    def user
+      @user ||=
+        context.is_a?(Hash) ? context[:user] || context[:current_user] : context
+    end
   end
 
   class Model
@@ -165,7 +184,8 @@ module Authorization
     private
 
     def fetch_policy(policy_key)
-      value = @policies.fetch(policy_key, Policy)
+      data = @policies[policy_key]
+      value = data || @policies.fetch(:default, Policy)
       value.is_a?(Symbol) ? fetch_policy(value) : value
     end
   end

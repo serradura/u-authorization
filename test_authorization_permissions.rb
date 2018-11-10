@@ -53,6 +53,9 @@ class TestAdminPermissions < TestAuthorizationPermissions
     refute permissions2.to_not?(['visit'])
     refute permissions2.to_not?(['visit', 'refund'])
     refute permissions1.to_not?(['export_as_csv'])
+
+    assert permissions1.to('visit').context?('home')
+    assert permissions2.to('visit').context?(['home'])
   end
 end
 
@@ -124,11 +127,19 @@ class TestUser0Permissions < TestAuthorizationPermissions
     assert permissions1.to?(['visit'])
     refute permissions1.to?('export_as_csv')
 
+    permissions_to = permissions1.to('export_as_csv')
+
+    refute permissions_to.context?('home')
+
     permissions2 = build_permissions(['sales'])
 
     assert permissions2.to?(['visit'])
     assert permissions2.to?(['visit', 'export_as_csv'])
     assert permissions2.to?('export_as_csv')
+
+    another_permissions_to = permissions2.to('export_as_csv')
+
+    assert another_permissions_to.context?('sales')
   end
 end
 

@@ -68,6 +68,18 @@ class TestAuthorizationModel < Microtest::Test
     assert authorization.to(:numeric_subject, subject: 1).valid?
   end
 
+  test '#to (default)' do
+    authorization = Authorization::Model.build(@user, {}, context: [])
+
+    assert authorization.to(:foo).class == Authorization::Policy
+    assert authorization.to(:bar).class == Authorization::Policy
+
+    authorization.add_policy(:default, FooPolicy)
+
+    assert authorization.to(:foo).class == FooPolicy
+    assert authorization.to(:bar).class == FooPolicy
+  end
+
   test '#to (cache strategy)' do
     authorization = Authorization::Model.build(
       @user, {}, context: [], policies: { bar: BarPolicy }
