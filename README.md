@@ -48,11 +48,11 @@ $ gem install u-authorization
     policies: { default: :sales, sales: SalesPolicy }
   )
 
-  # Verifying the role permissions for a given context
+  # Verifying the permissions for the given context
   authorization.permissions.to?('visit')         #=> true
   authorization.permissions.to?('export_as_csv') #=> false
 
-  # Verifying permission for a given feature to different contexts
+  # Verifying permission for a given feature in different contexts
   has_permission_to = authorization.permissions.to('export_as_csv')
   has_permission_to.context?('billings') #=> true
   has_permission_to.context?('sales')    #=> false
@@ -61,14 +61,15 @@ $ gem install u-authorization
 
   # The #to() method fetch and build a policy.
   authorization.to(:sales).edit?(charge)   #=> true
+
   # :default is the only permitted key to receive
   # another symbol as value (a policy reference).
   authorization.to(:default).edit?(charge) #=> true
 
   # #policy() method has a similar behavior of #to(),
   # but if there is a policy named as ":default", it will be fetched and instantiated by default.
-  authorization.policy.edit?(charge)          #=> true
-  authorization.policy(:sales).edit?(charge)  #=> true
+  authorization.policy.edit?(charge)         #=> true
+  authorization.policy(:sales).edit?(charge) #=> true
 
 
   # Cloning the authorization changing only its context.
@@ -78,6 +79,5 @@ $ gem install u-authorization
 
   new_authorization.permissions.to?('visit') #=> false
 
-  authorization == new_authorization
-  #=> false
+  authorization == new_authorization #=> false
 ```
