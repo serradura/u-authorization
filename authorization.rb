@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Authorization
-  VERSION = '1.2.0'
+  VERSION = '1.2.1'
 
   MapValuesAsDowncasedStrings = -> (values) do
     Array(values).map { |value| String(value).downcase }
@@ -23,17 +23,17 @@ module Authorization
       if !(any = role_permission['any']).nil?
         any
       elsif only = role_permission['only']
-        check_feature_permission(only) { |perm| context.include?(perm) }
+        check_feature_permission(only, context)
       elsif except = role_permission['except']
-        check_feature_permission(except) { |perm| !context.include?(perm) }
+        !check_feature_permission(except, context)
       else
         raise NotImplementedError
       end
     end
 
-    def check_feature_permission(context_values)
+    def check_feature_permission(context_values, context)
       MapValuesAsDowncasedStrings.(context_values).any? do |context_value|
-        Array(context_value.split('.')).all? { |permission| yield(permission) }
+          Array(context_value.split('.')).all? { |permission| context.include?(permission) }
       end
     end
   end

@@ -7,7 +7,7 @@ class TestAuthorizationModel < Microtest::Test
     @user = OpenStruct.new(id: 1)
     @role_permissions = {
       'visit' => {'any' => true},
-      'export_as_csv' => {'except' => ['sales']}
+      'export_as_csv' => {'except' => ['sales', 'foo']}
     }
   end
 
