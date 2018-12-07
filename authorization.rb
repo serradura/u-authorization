@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Authorization
-  VERSION = '1.2.1'
+  VERSION = '1.3.0'
 
   MapValuesAsDowncasedStrings = -> (values) do
     Array(values).map { |value| String(value).downcase }
@@ -20,7 +20,9 @@ module Authorization
     def has_permission?(context, role_permission)
       return false if role_permission.nil?
 
-      if !(any = role_permission['any']).nil?
+      if role_permission == false || role_permission == true
+        role_permission
+      elsif !(any = role_permission['any']).nil?
         any
       elsif only = role_permission['only']
         check_feature_permission(only, context)

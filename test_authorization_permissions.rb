@@ -33,7 +33,7 @@ class TestAdminPermissions < TestAuthorizationPermissions
     {
       "name": "admin",
       "permissions": {
-        "visit": { "any": true },
+        "visit": true,
         "refund": { "any": true },
         "export_as_csv": { "any": true }
       }
@@ -74,8 +74,8 @@ module ReadOnlyRoles
       "name": "visitonly2",
       "permissions": {
         "visit": { "any": true },
-        "refund": { "any": false },
-        "export_as_csv": { "any": false }
+        "refund": false,
+        "export_as_csv": false
       }
     }
   JSON

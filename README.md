@@ -29,11 +29,14 @@ $ gem install u-authorization
   require 'ostruct'
   require 'authorization'
 
-  role = OpenStruct.new(name: 'user',
-                        permissions: {
-                          'visit' => { 'except' => ['billings'] },
-                          'export_as_csv' => { 'except' => ['sales'] }
-                        })
+  role = OpenStruct.new(
+    name: 'user',
+    permissions: {
+      'visit' => { 'except' => ['billings'] },
+      'edit_users' => false, # Same as: 'edit_users' => { 'any' => false },
+      'export_as_csv' => { 'except' => ['sales'] }
+    }
+  )
 
   user = OpenStruct.new(id: 1, role: role)
 
