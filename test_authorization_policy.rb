@@ -45,7 +45,7 @@ module TestAuthorizationPolicies
 
     class CustomPolicyB < Authorization::Policy
       def show?(record)
-        permissions.to?('visit') && user.id == record.user_id
+        permissions.to?('visit') && current_user.id == record.user_id
       end
     end
 

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Authorization
-  VERSION = '1.3.0'
+  VERSION = '1.4.0'
 
   MapValuesAsDowncasedStrings = -> (values) do
     Array(values).map { |value| String(value).downcase }
@@ -114,6 +114,7 @@ module Authorization
       @user ||=
         context.is_a?(Hash) ? context[:user] || context[:current_user] : context
     end
+    alias_method :current_user, :user
   end
 
   class Model
