@@ -1,4 +1,4 @@
-# u-authorization.rb
+# µ-authorization
 
 Simple authorization library and role managment for Ruby.
 
