@@ -6,7 +6,7 @@ module AuthorizationPolicyTest
   require 'ostruct'
 
   class StandardBehavior < Minitest::Test
-    class StardardPolicy < Authorization::Policy
+    class StardardPolicy < Micro::Authorization::Policy
     end
 
     def test_false_as_the_default_result_to_any_kind_of_query
@@ -34,7 +34,7 @@ module AuthorizationPolicyTest
       @record_b = OpenStruct.new(user_id: 2)
     end
 
-    class CustomPolicyA < Authorization::Policy
+    class CustomPolicyA < Micro::Authorization::Policy
       def show?
         user.id == subject.user_id
       end
@@ -45,14 +45,14 @@ module AuthorizationPolicyTest
       refute CustomPolicyA.new(@user, @record_b).show?
     end
 
-    class CustomPolicyB < Authorization::Policy
+    class CustomPolicyB < Micro::Authorization::Policy
       def show?(record)
         permissions.to?('visit') && current_user.id == record.user_id
       end
     end
 
     def test_policy_result_when_receives_the_subject_as_a_query_argument
-      permissions = Authorization::Permissions.new(
+      permissions = Micro::Authorization::Permissions.new(
         { 'visit' => { 'only' => ['test'] } }, context: ['test']
       )
 

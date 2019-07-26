@@ -20,7 +20,7 @@ class AuthorizationPermissionsTest < Minitest::Test
   end
 
   def build_permissions(context)
-    Authorization::Permissions.new @role['permissions'], context: context
+    Micro::Authorization::Permissions.new @role['permissions'], context: context
   end
 
   def teardown

@@ -1,3 +1,3 @@
 # frozen_string_literal: true
 
-require 'authorization'
+require 'micro/authorization'

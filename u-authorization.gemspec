@@ -1,10 +1,10 @@
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'authorization'
+require 'micro/authorization/version'
 
 Gem::Specification.new do |spec|
   spec.name         = 'u-authorization'
-  spec.version      = Authorization::VERSION
+  spec.version      = Micro::Authorization::VERSION
   spec.authors      = ['Rodrigo Serradura']
   spec.email        = ['rodrigo.serradura@gmail.com']
 

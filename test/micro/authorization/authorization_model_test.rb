@@ -14,7 +14,7 @@ class AuthorizationModelTest < Minitest::Test
   end
 
   def test_permissions
-    authorization = Authorization::Model.build(
+    authorization = Micro::Authorization::Model.build(
       @user, @role_permissions,
       context: ['dashboard', 'controllers', 'sales', 'index']
     )
@@ -23,25 +23,25 @@ class AuthorizationModelTest < Minitest::Test
     refute authorization.permissions.to?('export_as_csv')
   end
 
-  class FooPolicy < Authorization::Policy
+  class FooPolicy < Micro::Authorization::Policy
     def index?
       !user.id.nil?
     end
   end
 
-  class BarPolicy < Authorization::Policy
+  class BarPolicy < Micro::Authorization::Policy
     def index?
       true
     end
   end
 
-  class BazPolicy < Authorization::Policy
+  class BazPolicy < Micro::Authorization::Policy
     def index?(value)
       value == true
     end
   end
 
-  class NumericSubjectPolicy < Authorization::Policy
+  class NumericSubjectPolicy < Micro::Authorization::Policy
     def valid?
       subject.is_a? Numeric
     end
@@ -52,7 +52,7 @@ class AuthorizationModelTest < Minitest::Test
   end
 
   def test_to
-    authorization = Authorization::Model.build(@user, {}, context: [])
+    authorization = Micro::Authorization::Model.build(@user, {}, context: [])
 
     refute authorization.to(:foo).index?, "forbids if the policy wasn't added"
     refute authorization.to(:bar).index?, "forbids if the policy wasn't added"
@@ -71,10 +71,10 @@ class AuthorizationModelTest < Minitest::Test
   end
 
   def test_to_default
-    authorization = Authorization::Model.build(@user, {}, context: [])
+    authorization = Micro::Authorization::Model.build(@user, {}, context: [])
 
-    assert authorization.to(:foo).class == Authorization::Policy
-    assert authorization.to(:bar).class == Authorization::Policy
+    assert authorization.to(:foo).class == Micro::Authorization::Policy
+    assert authorization.to(:bar).class == Micro::Authorization::Policy
 
     authorization.add_policy(:default, FooPolicy)
 
@@ -83,7 +83,7 @@ class AuthorizationModelTest < Minitest::Test
   end
 
   def test_to_cache_strategy
-    authorization = Authorization::Model.build(
+    authorization = Micro::Authorization::Model.build(
       @user, {}, context: [], policies: { bar: BarPolicy }
     )
 
@@ -109,13 +109,13 @@ class AuthorizationModelTest < Minitest::Test
   end
 
   def test_policy_default
-    authorization1 = Authorization::Model.build(
+    authorization1 = Micro::Authorization::Model.build(
       @user, {}, context: [], policies: { default: FooPolicy }
     )
 
     assert authorization1.policy.class == authorization1.to(:default).class
 
-    authorization2 = Authorization::Model.build(
+    authorization2 = Micro::Authorization::Model.build(
       @user, {}, context: [], policies: { default: :foo, foo: FooPolicy }
     )
 
@@ -123,7 +123,7 @@ class AuthorizationModelTest < Minitest::Test
   end
 
   def test_to_an_policy_behaviors
-    authorization = Authorization::Model.build(@user, {}, context: [],
+    authorization = Micro::Authorization::Model.build(@user, {}, context: [],
       policies: {
         default: FooPolicy, baz: BazPolicy, numeric_subject: NumericSubjectPolicy
       }
@@ -139,7 +139,7 @@ class AuthorizationModelTest < Minitest::Test
   end
 
   def test_map_context
-    authorization = Authorization::Model.build(
+    authorization = Micro::Authorization::Model.build(
       @user, @role_permissions,
       context: ['dashboard', 'controllers', 'sales', 'index']
     )
@@ -157,7 +157,7 @@ class AuthorizationModelTest < Minitest::Test
   def test_map_policies
     @user.id = nil
 
-    authorization = Authorization::Model.build(
+    authorization = Micro::Authorization::Model.build(
       @user, @role_permissions,
       context: ['sales'], policies: { default: FooPolicy }
     )
@@ -173,7 +173,7 @@ class AuthorizationModelTest < Minitest::Test
 
   def test_map_with_an_invalid_context
     begin
-      authorization = Authorization::Model.build(
+      authorization = Micro::Authorization::Model.build(
         @user, @role_permissions,
         context: ['sales'], policies: { default: FooPolicy }
       )
