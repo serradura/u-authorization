@@ -3,16 +3,17 @@
 module Micro
   module Authorization
     class Model
-      attr_reader :user, :permissions
+      attr_reader :context, :permissions
 
-      def self.build(user, role, context: [], policies: {})
-        permissions = Permissions.new(role, context: context)
+      def self.build(permissions:, context:, policies: {})
+        permissions_model =
+          Permissions.new(permissions, context: context.delete(:permissions))
 
-        self.new(user, permissions: permissions, policies: policies)
+        self.new(context, permissions: permissions_model, policies: policies)
       end
 
-      def initialize(user, permissions:, policies: {})
-        @user = user
+      def initialize(context, permissions:, policies: {})
+        @context = context
         @policies = {}
         @policies_cache = {}
         @permissions = Permissions[permissions]
@@ -25,12 +26,13 @@ module Micro
           raise ArgumentError, 'context or policies keywords args must be defined'
         end
 
-        new_permissions =
-          Permissions.new(permissions.role, context: context || @context)
+        permissions_context = context || permissions.context
 
-        self.class.new(
-          user, permissions: new_permissions, policies: policies || @policies
-        )
+        new_permissions =
+          Permissions.new(permissions.role, context: permissions_context)
+
+        self.class.new(context, permissions: new_permissions,
+                                policies: policies || @policies)
       end
 
       def add_policy(key, policy_klass)
@@ -56,11 +58,11 @@ module Micro
       def to(policy_key, subject: nil)
         policy_klass = fetch_policy(policy_key)
 
-        return policy_klass.new(user, subject, permissions: permissions) if subject
+        return policy_klass.new(context, subject, permissions: permissions) if subject
 
         return @policies_cache[policy_key] if @policies_cache[policy_key]
 
-        policy_klass.new(user, permissions: permissions).tap do |instance|
+        policy_klass.new(context, permissions: permissions).tap do |instance|
           @policies_cache[policy_key] = instance if policy_klass != Policy
         end
       end

@@ -15,8 +15,11 @@ class AuthorizationModelTest < Minitest::Test
 
   def test_permissions
     authorization = Micro::Authorization::Model.build(
-      @user, @role_permissions,
-      context: ['dashboard', 'controllers', 'sales', 'index']
+      permissions: @role_permissions,
+      context: {
+        user: @user,
+        permissions: ['dashboard', 'controllers', 'sales', 'index']
+      }
     )
 
     assert authorization.permissions.to?('visit')
@@ -52,7 +55,10 @@ class AuthorizationModelTest < Minitest::Test
   end
 
   def test_to
-    authorization = Micro::Authorization::Model.build(@user, {}, context: [])
+    authorization = Micro::Authorization::Model.build(
+      permissions: {},
+      context: { user: @user }
+    )
 
     refute authorization.to(:foo).index?, "forbids if the policy wasn't added"
     refute authorization.to(:bar).index?, "forbids if the policy wasn't added"
@@ -71,7 +77,10 @@ class AuthorizationModelTest < Minitest::Test
   end
 
   def test_to_default
-    authorization = Micro::Authorization::Model.build(@user, {}, context: [])
+    authorization = Micro::Authorization::Model.build(
+      permissions: {},
+      context: { user: @user }
+    )
 
     assert authorization.to(:foo).class == Micro::Authorization::Policy
     assert authorization.to(:bar).class == Micro::Authorization::Policy
@@ -84,7 +93,9 @@ class AuthorizationModelTest < Minitest::Test
 
   def test_to_cache_strategy
     authorization = Micro::Authorization::Model.build(
-      @user, {}, context: [], policies: { bar: BarPolicy }
+      permissions: {},
+      policies: { bar: BarPolicy },
+      context: { user: @user }
     )
 
     assert authorization.to(:bar).index?
@@ -110,23 +121,27 @@ class AuthorizationModelTest < Minitest::Test
 
   def test_policy_default
     authorization1 = Micro::Authorization::Model.build(
-      @user, {}, context: [], policies: { default: FooPolicy }
+      permissions: {},
+      policies: { foo: FooPolicy },
+      context: { user: @user }
     )
 
     assert authorization1.policy.class == authorization1.to(:default).class
 
     authorization2 = Micro::Authorization::Model.build(
-      @user, {}, context: [], policies: { default: :foo, foo: FooPolicy }
+      permissions: {},
+      policies: { default: :foo, foo: FooPolicy },
+      context: { user: @user }
     )
 
     assert authorization2.policy.class == authorization2.to(:default).class
   end
 
   def test_to_an_policy_behaviors
-    authorization = Micro::Authorization::Model.build(@user, {}, context: [],
-      policies: {
-        default: FooPolicy, baz: BazPolicy, numeric_subject: NumericSubjectPolicy
-      }
+    authorization = Micro::Authorization::Model.build(
+      permissions: {},
+      policies: { default: FooPolicy, baz: BazPolicy, numeric_subject: NumericSubjectPolicy },
+      context: { user: @user }
     )
 
     assert authorization.policy(:baz).class == authorization.to(:baz).class
@@ -140,8 +155,12 @@ class AuthorizationModelTest < Minitest::Test
 
   def test_map_context
     authorization = Micro::Authorization::Model.build(
-      @user, @role_permissions,
-      context: ['dashboard', 'controllers', 'sales', 'index']
+      permissions: @role_permissions,
+      policies: { default: FooPolicy, baz: BazPolicy, numeric_subject: NumericSubjectPolicy },
+      context: {
+        user: @user,
+        permissions: ['dashboard', 'controllers', 'sales', 'index']
+      }
     )
 
     new_authorization = authorization.map(context: [
@@ -158,8 +177,12 @@ class AuthorizationModelTest < Minitest::Test
     @user.id = nil
 
     authorization = Micro::Authorization::Model.build(
-      @user, @role_permissions,
-      context: ['sales'], policies: { default: FooPolicy }
+      permissions: @role_permissions,
+      policies: { default: FooPolicy },
+      context: {
+        user: @user,
+        permissions: ['sales']
+      }
     )
 
     refute authorization.policy.index?
@@ -174,8 +197,12 @@ class AuthorizationModelTest < Minitest::Test
   def test_map_with_an_invalid_context
     begin
       authorization = Micro::Authorization::Model.build(
-        @user, @role_permissions,
-        context: ['sales'], policies: { default: FooPolicy }
+        permissions: @role_permissions,
+        policies: { default: FooPolicy },
+        context: {
+          user: @user,
+          permissions: ['sales']
+        }
       )
 
       authorization.map()
