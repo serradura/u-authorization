@@ -1,38 +1,19 @@
 # frozen_string_literal: true
 
+require 'micro/authorization/permissions/checker'
+require 'micro/authorization/permissions/model'
+
 module Micro
   module Authorization
-    class Permissions
-      attr_reader :role, :context
-
+    module Permissions
       def self.[](instance)
-        return instance if instance.is_a?(Permissions)
+        return instance if instance.is_a?(Permissions::Model)
 
         raise ArgumentError, "#{instance.inspect} must be a #{self.name}"
       end
 
-      def initialize(role_permissions, context: [])
-        @role = role_permissions.dup.freeze
-        @cache = {}
-        @context = MapValuesAsDowncasedStrings.(context).freeze
-      end
-
-      def to(features)
-        FeaturesPermissionChecker.new(@role, features)
-      end
-
-      def to?(features = nil)
-        has_permission_to = to(features)
-
-        cache_key = has_permission_to.required_features.inspect
-
-        return @cache[cache_key] unless @cache[cache_key].nil?
-
-        @cache[cache_key] = has_permission_to.context?(@context)
-      end
-
-      def to_not?(features = nil)
-        !to?(features)
+      def self.new(role_permissions, context: [])
+        Permissions::Model.new(role_permissions, context: context)
       end
     end
   end
