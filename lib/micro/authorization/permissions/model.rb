@@ -7,7 +7,7 @@ module Micro
         def initialize(role_permissions, context:)
           @role = role_permissions.dup.freeze
           @cache = {}
-          @context = MapValuesAsDowncasedStrings.(context).freeze
+          @context = Utils.values_as_downcased_strings(context).freeze
         end
 
         def to(features)

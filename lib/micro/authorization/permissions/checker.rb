@@ -28,8 +28,8 @@ module Micro
         end
 
         def check_feature_permission(context_values, context)
-          MapValuesAsDowncasedStrings.(context_values).any? do |context_value|
-              Array(context_value.split('.')).all? { |permission| context.include?(permission) }
+          Utils.values_as_downcased_strings(context_values).any? do |context_value|
+            Array(context_value.split('.')).all? { |permission| context.include?(permission) }
           end
         end
       end
@@ -41,7 +41,7 @@ module Micro
 
         def initialize(role, features)
           @role = role
-          @required_features = MapValuesAsDowncasedStrings.(features)
+          @required_features = Utils.values_as_downcased_strings(features)
         end
 
         def context?(context)
