@@ -40,13 +40,13 @@ $ gem install u-authorization
 
   user = OpenStruct.new(id: 1, role: role)
 
-  class SalesPolicy < Authorization::Policy
+  class SalesPolicy < Micro::Authorization::Policy
     def edit?(record)
       user.id == record.user_id
     end
   end
 
-  authorization = Authorization::Model.build(user, user.role.permissions,
+  authorization = Micro::Authorization::Model.build(user, user.role.permissions,
     context: ['dashboard', 'controllers', 'sales', 'index'],
     policies: { default: :sales, sales: SalesPolicy }
   )
