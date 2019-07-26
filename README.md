@@ -46,9 +46,13 @@ $ gem install u-authorization
     end
   end
 
-  authorization = Micro::Authorization::Model.build(user, user.role.permissions,
-    context: ['dashboard', 'controllers', 'sales', 'index'],
+  authorization = Micro::Authorization::Model.build(
+    permissions: user.role.permissions,
     policies: { default: :sales, sales: SalesPolicy }
+    context: {
+      user: user,
+      permissions: ['dashboard', 'controllers', 'sales', 'index']
+    }
   )
 
   # Verifying the permissions for the given context
@@ -84,3 +88,7 @@ $ gem install u-authorization
 
   authorization == new_authorization #=> false
 ```
+
+## Original implementation
+
+https://gist.github.com/serradura/7d51b979b90609d8601d0f416a9aa373
