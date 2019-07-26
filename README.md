@@ -27,7 +27,7 @@ $ gem install u-authorization
 
 ```ruby
   require 'ostruct'
-  require 'authorization'
+  require 'u-authorization'
 
   role = OpenStruct.new(
     name: 'user',
