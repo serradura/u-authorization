@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
-class TestAuthorizationPermissions < Microtest::Test
+require 'test_helper'
+
+class AuthorizationPermissionsTest < Minitest::Test
   require 'json'
 
-  def setup_all
+  def setup
     json = self.class.const_get(:ROLE).tap do |raw|
       identation = raw.scan(/^\s*/).min_by{ |l| l.length }
 
@@ -21,14 +23,14 @@ class TestAuthorizationPermissions < Microtest::Test
     Authorization::Permissions.new @role['permissions'], context: context
   end
 
-  def teardown_all
+  def teardown
     print 'Elapsed time in milliseconds: '
     puts (Time.now - @start_time) * 1000.0
     puts ''
   end
 end
 
-class TestAdminPermissions < TestAuthorizationPermissions
+class TestAdminPermissions < AuthorizationPermissionsTest
   ROLE = <<-JSON
     {
       "name": "admin",
@@ -81,7 +83,7 @@ module ReadOnlyRoles
   JSON
 end
 
-class TestReadonlyPermissions < TestAuthorizationPermissions
+class TestReadonlyPermissions < AuthorizationPermissionsTest
   def call_permissions_test
     permissions1 = build_permissions('home')
     permissions2 = build_permissions(['home'])
@@ -109,7 +111,7 @@ class TestReadonlyBPermissions < TestReadonlyPermissions
   alias_method :test_role_permissions, :call_permissions_test
 end
 
-class TestUser0Permissions < TestAuthorizationPermissions
+class TestUser0Permissions < AuthorizationPermissionsTest
   ROLE = <<-JSON
     {
       "name": "user0",
@@ -143,7 +145,7 @@ class TestUser0Permissions < TestAuthorizationPermissions
   end
 end
 
-class TestUser1Permissions < TestAuthorizationPermissions
+class TestUser1Permissions < AuthorizationPermissionsTest
   ROLE = <<-JSON
     {
       "name": "user1",
@@ -180,7 +182,7 @@ class TestUser1Permissions < TestAuthorizationPermissions
   end
 end
 
-class TestUser2Permissions < TestAuthorizationPermissions
+class TestUser2Permissions < AuthorizationPermissionsTest
   ROLE = <<-JSON
     {
       "name": "user2",
@@ -217,7 +219,7 @@ class TestUser2Permissions < TestAuthorizationPermissions
   end
 end
 
-class TestUser3Permissions < TestAuthorizationPermissions
+class TestUser3Permissions < AuthorizationPermissionsTest
   ROLE =  <<-JSON
     {
       "name": "user3",
@@ -254,7 +256,7 @@ class TestUser3Permissions < TestAuthorizationPermissions
   end
 end
 
-class TestAuthorizationPermissionsToHanamiClasses < TestAuthorizationPermissions
+class TestAuthorizationPermissionsToHanamiClasses < AuthorizationPermissionsTest
   module Dashboard
     module Controllers
       module Sales
@@ -308,7 +310,7 @@ class TestAuthorizationPermissionsToHanamiClasses < TestAuthorizationPermissions
   end
 end
 
-class TestAuthorizationPermissionsCacheStrategy < TestAuthorizationPermissions
+class TestAuthorizationPermissionsCacheStrategy < AuthorizationPermissionsTest
   ROLE = <<-JSON
     {
       "name": "cache_strategy",

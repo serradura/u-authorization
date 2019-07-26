@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-class TestAuthorizationModel < Microtest::Test
+require 'test_helper'
+
+class AuthorizationModelTest < Minitest::Test
   require 'ostruct'
 
   def setup
@@ -49,7 +51,7 @@ class TestAuthorizationModel < Microtest::Test
     end
   end
 
-  test '#to' do
+  def test_to
     authorization = Authorization::Model.build(@user, {}, context: [])
 
     refute authorization.to(:foo).index?, "forbids if the policy wasn't added"
@@ -68,7 +70,7 @@ class TestAuthorizationModel < Microtest::Test
     assert authorization.to(:numeric_subject, subject: 1).valid?
   end
 
-  test '#to (default)' do
+  def test_to_default
     authorization = Authorization::Model.build(@user, {}, context: [])
 
     assert authorization.to(:foo).class == Authorization::Policy
@@ -80,7 +82,7 @@ class TestAuthorizationModel < Microtest::Test
     assert authorization.to(:bar).class == FooPolicy
   end
 
-  test '#to (cache strategy)' do
+  def test_to_cache_strategy
     authorization = Authorization::Model.build(
       @user, {}, context: [], policies: { bar: BarPolicy }
     )
@@ -106,7 +108,7 @@ class TestAuthorizationModel < Microtest::Test
     end
   end
 
-  test '#policy (default)' do
+  def test_policy_default
     authorization1 = Authorization::Model.build(
       @user, {}, context: [], policies: { default: FooPolicy }
     )
@@ -120,7 +122,7 @@ class TestAuthorizationModel < Microtest::Test
     assert authorization2.policy.class == authorization2.to(:default).class
   end
 
-  test 'same behavior to #policy and #to methods' do
+  def test_to_an_policy_behaviors
     authorization = Authorization::Model.build(@user, {}, context: [],
       policies: {
         default: FooPolicy, baz: BazPolicy, numeric_subject: NumericSubjectPolicy
@@ -136,7 +138,7 @@ class TestAuthorizationModel < Microtest::Test
     assert numeric_subject_policy_a.number == numeric_subject_policy_b.number
   end
 
-  test '#map context:' do
+  def test_map_context
     authorization = Authorization::Model.build(
       @user, @role_permissions,
       context: ['dashboard', 'controllers', 'sales', 'index']
@@ -152,7 +154,7 @@ class TestAuthorizationModel < Microtest::Test
     assert new_authorization.permissions.to?('export_as_csv')
   end
 
-  test '#map policies:' do
+  def test_map_policies
     @user.id = nil
 
     authorization = Authorization::Model.build(
@@ -169,7 +171,7 @@ class TestAuthorizationModel < Microtest::Test
     assert authorization.permissions.to_not?('export_as_csv')
   end
 
-  test '#map context: nil, policies: nil' do
+  def test_map_with_an_invalid_context
     begin
       authorization = Authorization::Model.build(
         @user, @role_permissions,

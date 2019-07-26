@@ -4,7 +4,7 @@ Simple authorization library and role managment for Ruby.
 
 ## Prerequisites
 
-> Ruby >= 2.2.2
+> Ruby >= 2.2.0
 
 ## Installation
 

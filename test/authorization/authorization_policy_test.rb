@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
-module TestAuthorizationPolicies
+require 'test_helper'
+
+module AuthorizationPolicyTest
   require 'ostruct'
 
-  class StandardBehavior < Microtest::Test
+  class StandardBehavior < Minitest::Test
     class StardardPolicy < Authorization::Policy
     end
 
@@ -25,7 +27,7 @@ module TestAuthorizationPolicies
     end
   end
 
-  class CustomBehavior < Microtest::Test
+  class CustomBehavior < Minitest::Test
     def setup
       @user = OpenStruct.new(name: 'User', id: 1)
       @record_a = OpenStruct.new(user_id: @user.id)
