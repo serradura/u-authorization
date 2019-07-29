@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-class AuthorizationModelTest < Minitest::Test
+class Micro::Authorization::ModelTest < Minitest::Test
   require 'ostruct'
 
   def setup
@@ -76,7 +76,7 @@ class AuthorizationModelTest < Minitest::Test
     assert authorization.to(:numeric_subject, subject: 1).valid?
   end
 
-  def test_to_default
+  def test_default_policy_via_to_method
     authorization = Micro::Authorization::Model.build(
       permissions: {},
       context: { user: @user }
@@ -91,7 +91,7 @@ class AuthorizationModelTest < Minitest::Test
     assert authorization.to(:bar).class == FooPolicy
   end
 
-  def test_to_cache_strategy
+  def test_policy_cache_strategy_via_to_method
     authorization = Micro::Authorization::Model.build(
       permissions: {},
       policies: { bar: BarPolicy },
@@ -119,7 +119,7 @@ class AuthorizationModelTest < Minitest::Test
     end
   end
 
-  def test_policy_default
+  def test_default_policy_via_policy_method
     authorization1 = Micro::Authorization::Model.build(
       permissions: {},
       policies: { foo: FooPolicy },
@@ -137,7 +137,7 @@ class AuthorizationModelTest < Minitest::Test
     assert authorization2.policy.class == authorization2.to(:default).class
   end
 
-  def test_to_an_policy_behaviors
+  def test_that_to_and_policy_method_has_the_same_behavior
     authorization = Micro::Authorization::Model.build(
       permissions: {},
       policies: { default: FooPolicy, baz: BazPolicy, numeric_subject: NumericSubjectPolicy },
@@ -195,19 +195,16 @@ class AuthorizationModelTest < Minitest::Test
   end
 
   def test_map_with_an_invalid_context
-    begin
-      authorization = Micro::Authorization::Model.build(
-        permissions: @role_permissions,
-        policies: { default: FooPolicy },
-        context: {
-          user: @user,
-          permissions: ['sales']
-        }
-      )
+    authorization = Micro::Authorization::Model.build(
+      permissions: @role_permissions,
+      policies: { default: FooPolicy },
+      context: {
+        user: @user,
+        permissions: ['sales']
+      }
+    )
 
-      authorization.map()
-    rescue ArgumentError => _e
-      assert true
-    end
+    err = assert_raises(ArgumentError) { authorization.map({}) }
+    assert_equal('context or policies keywords args must be defined', err.message)
   end
 end
