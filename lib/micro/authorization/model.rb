@@ -6,8 +6,11 @@ module Micro
       attr_reader :context, :permissions
 
       def self.build(permissions:, context:, policies: {})
+        permissions_context =
+          context.delete(:to_permit) || context.delete(:permissions)
+
         permissions_model =
-          Permissions.new(permissions, context: context.delete(:permissions))
+          Permissions.new(permissions, context: permissions_context)
 
         self.new(context, permissions: permissions_model, policies: policies)
       end
