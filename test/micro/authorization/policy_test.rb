@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-module AuthorizationPolicyTest
+module Micro::Authorization::PolicyTest
   require 'ostruct'
 
   class StandardBehavior < Minitest::Test
@@ -21,9 +21,8 @@ module AuthorizationPolicyTest
     end
 
     def test_non_predicate_method
-      StardardPolicy.new({}).foo
-    rescue NoMethodError => e
-      assert e.message.include?('foo')
+      err = assert_raises(NoMethodError) { StardardPolicy.new({}).foo }
+      assert err.message.include?('foo')
     end
   end
 
