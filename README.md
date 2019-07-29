@@ -51,9 +51,15 @@ $ gem install u-authorization
     policies: { default: :sales, sales: SalesPolicy }
     context: {
       user: user,
-      permissions: ['dashboard', 'controllers', 'sales', 'index']
+      to_permit: ['dashboard', 'controllers', 'sales', 'index']
     }
   )
+
+  # Note: In the context, you can use :permissions key as an alias of :to_permit. e.g:
+  # context: {
+  #   user: user,
+  #   permissions: ['dashboard', 'controllers', 'sales', 'index']
+  # }
 
   # Verifying the permissions for the given context
   authorization.permissions.to?('visit')         #=> true

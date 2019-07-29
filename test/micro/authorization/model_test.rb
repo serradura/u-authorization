@@ -18,7 +18,7 @@ class Micro::Authorization::ModelTest < Minitest::Test
       permissions: @role_permissions,
       context: {
         user: @user,
-        permissions: ['dashboard', 'controllers', 'sales', 'index']
+        to_permit: ['dashboard', 'controllers', 'sales', 'index']
       }
     )
 
@@ -181,7 +181,7 @@ class Micro::Authorization::ModelTest < Minitest::Test
       policies: { default: FooPolicy },
       context: {
         user: @user,
-        permissions: ['sales']
+        to_permit: ['sales']
       }
     )
 
