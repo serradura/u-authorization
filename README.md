@@ -1,3 +1,8 @@
+[![Gem](https://img.shields.io/gem/v/u-authorization.svg?style=flat-square)](https://rubygems.org/gems/u-authorization)
+[![Build Status](https://travis-ci.com/serradura/u-authorization.svg?branch=master)](https://travis-ci.com/serradura/u-authorization)
+[![Maintainability](https://api.codeclimate.com/v1/badges/19251112cf39afdf8bf6/maintainability)](https://codeclimate.com/github/serradura/u-authorization/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/19251112cf39afdf8bf6/test_coverage)](https://codeclimate.com/github/serradura/u-authorization/test_coverage)
+
 # µ-authorization
 
 Simple authorization library and role managment for Ruby.
