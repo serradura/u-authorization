@@ -34,16 +34,28 @@ $ gem install u-authorization
   require 'ostruct'
   require 'u-authorization'
 
-  role = OpenStruct.new(
-    name: 'user',
-    permissions: {
-      'visit' => { 'except' => ['billings'] },
-      'edit_users' => false, # Same as: 'edit_users' => { 'any' => false },
-      'export_as_csv' => { 'except' => ['sales'] }
+  module Permissions
+    ADMIN = {
+      'visit'  => { 'any' => true },
+      'export' => { 'any' => true }
     }
-  )
 
-  user = OpenStruct.new(id: 1, role: role)
+    USER = {
+      'visit'  => { 'except' => ['billings'] },
+      'export' => { 'except' => ['sales'] }
+    }
+
+    ALL = {
+      'admin' => ADMIN,
+      'user'  => USER
+    }
+
+    def self.to(role)
+      ALL.fetch(role, 'user')
+    end
+  end
+
+  user = OpenStruct.new(id: 1, role: 'user')
 
   class SalesPolicy < Micro::Authorization::Policy
     def edit?(record)
@@ -52,26 +64,26 @@ $ gem install u-authorization
   end
 
   authorization = Micro::Authorization::Model.build(
-    permissions: user.role.permissions,
-    policies: { default: :sales, sales: SalesPolicy }
+    permissions: Permissions.to(user.role),
+    policies: { default: :sales, sales: SalesPolicy },
     context: {
       user: user,
       to_permit: ['dashboard', 'controllers', 'sales', 'index']
     }
   )
 
-  # Note: In the context, you can use :permissions key as an alias of :to_permit. e.g:
-  # context: {
-  #   user: user,
-  #   permissions: ['dashboard', 'controllers', 'sales', 'index']
-  # }
+  # Info about the `context` data:
+  #   1. :to_permit is a required key
+  #     1.1. :permissions is an alternative of :to_permit key.
+  #   2. :user is an optional key
+  #   3. Any key different of :permissions, will be passed as a policy context.
 
   # Verifying the permissions for the given context
-  authorization.permissions.to?('visit')         #=> true
-  authorization.permissions.to?('export_as_csv') #=> false
+  authorization.permissions.to?('visit')  #=> true
+  authorization.permissions.to?('export') #=> false
 
   # Verifying permission for a given feature in different contexts
-  has_permission_to = authorization.permissions.to('export_as_csv')
+  has_permission_to = authorization.permissions.to('export')
   has_permission_to.context?('billings') #=> true
   has_permission_to.context?('sales')    #=> false
 
@@ -81,14 +93,13 @@ $ gem install u-authorization
   authorization.to(:sales).edit?(charge)   #=> true
 
   # :default is the only permitted key to receive
-  # another symbol as value (a policy reference).
+  # another symbol as a value (a policy reference).
   authorization.to(:default).edit?(charge) #=> true
 
   # #policy() method has a similar behavior of #to(),
-  # but if there is a policy named as ":default", it will be fetched and instantiated by default.
+  # but if there is a policy defined as ":default", it will be fetched and instantiated by default.
   authorization.policy.edit?(charge)         #=> true
   authorization.policy(:sales).edit?(charge) #=> true
-
 
   # Cloning the authorization changing only its context.
   new_authorization = authorization.map(context: [
@@ -97,7 +108,7 @@ $ gem install u-authorization
 
   new_authorization.permissions.to?('visit') #=> false
 
-  authorization == new_authorization #=> false
+  authorization.equal?(new_authorization) #=> false
 ```
 
 ## Original implementation
