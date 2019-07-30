@@ -109,6 +109,26 @@ $ gem install u-authorization
   new_authorization.permissions.to?('visit') #=> false
 
   authorization.equal?(new_authorization) #=> false
+
+  #========================#
+  # Multi role permissions #
+  #========================#
+
+  authorization = Micro::Authorization::Model.build(
+    permissions: [Permissions::USER, Permissions::ADMIN], # An array of permissions
+    policies: { default: :sales, sales: SalesPolicy },
+    context: {
+      user: user,
+      to_permit: ['dashboard', 'controllers', 'sales', 'index']
+    }
+  )
+
+  authorization.permissions.to?('visit')  #=> true
+  authorization.permissions.to?('export') #=> true
+
+  has_permission_to = authorization.permissions.to('export')
+  has_permission_to.context?('billings') #=> true
+  has_permission_to.context?('sales')    #=> true
 ```
 
 ## Original implementation
