@@ -9,7 +9,7 @@ class Micro::Authorization::ModelTest < Minitest::Test
     @user = OpenStruct.new(id: 1)
     @role_permissions = {
       'visit' => {'any' => true},
-      'export_as_csv' => {'except' => ['sales', 'foo']}
+      'export' => {'except' => ['sales', 'foo']}
     }
   end
 
@@ -23,7 +23,7 @@ class Micro::Authorization::ModelTest < Minitest::Test
     )
 
     assert authorization.permissions.to?('visit')
-    refute authorization.permissions.to?('export_as_csv')
+    refute authorization.permissions.to?('export')
   end
 
   class FooPolicy < Micro::Authorization::Policy
@@ -170,7 +170,7 @@ class Micro::Authorization::ModelTest < Minitest::Test
     refute authorization == new_authorization
 
     assert new_authorization.permissions.to?('visit')
-    assert new_authorization.permissions.to?('export_as_csv')
+    assert new_authorization.permissions.to?('export')
   end
 
   def test_map_policies
@@ -186,12 +186,12 @@ class Micro::Authorization::ModelTest < Minitest::Test
     )
 
     refute authorization.policy.index?
-    assert authorization.permissions.to_not?('export_as_csv')
+    assert authorization.permissions.to_not?('export')
 
     new_authorization = authorization.map(policies: { default: BarPolicy })
 
     assert new_authorization.policy.index?
-    assert authorization.permissions.to_not?('export_as_csv')
+    assert authorization.permissions.to_not?('export')
   end
 
   def test_map_with_an_invalid_context
