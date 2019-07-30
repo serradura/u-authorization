@@ -79,5 +79,18 @@ class Micro::Authorization::MultiPermissionsTest < Minitest::Test
     assert multi_permissions2.to('visit').context?('reports')
     assert multi_permissions2.to('visit').context?('reports')
     assert multi_permissions2.to('visit').context?(['reports'])
+
+    # ---
+
+    # Deprecated method: required_features
+    assert_equal(
+      user_permissions.to('visit').required_context,
+      user_permissions.to('visit').required_features
+    )
+
+    assert_equal(
+      multi_permissions2.to('visit').required_context,
+      multi_permissions2.to('visit').required_features
+    )
   end
 end
