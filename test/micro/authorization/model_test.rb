@@ -26,6 +26,29 @@ class Micro::Authorization::ModelTest < Minitest::Test
     refute authorization.permissions.to?('export')
   end
 
+  def test_multi_permissions
+    authorization = Micro::Authorization::Model.build(
+      permissions: [
+        {
+          'visit' => {'any' => true},
+          'export' => {'except' => ['sales', 'foo']}
+        },
+        {
+          'visit' => {'any' => false},
+          'export' => {'any' => true}
+        }
+      ],
+      context: {
+        user: @user,
+        to_permit: ['dashboard', 'controllers', 'sales', 'index']
+      }
+    )
+
+    assert authorization.permissions.to?('visit')
+    assert authorization.permissions.to?('export')
+  end
+
+
   class FooPolicy < Micro::Authorization::Policy
     def index?
       !user.id.nil?
