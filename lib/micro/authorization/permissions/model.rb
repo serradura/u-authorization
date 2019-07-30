@@ -10,22 +10,22 @@ module Micro
           @context = Utils.values_as_downcased_strings(context).freeze
         end
 
-        def to(features)
-          Permissions::Checker.new(@role, features)
+        def to(required_context)
+          Permissions::Checker.of(@role, required_context: required_context)
         end
 
-        def to?(features = nil)
-          has_permission_to = to(features)
+        def to?(required_context = nil)
+          has_permission_to = to(required_context)
 
-          cache_key = has_permission_to.required_features.inspect
+          cache_key = has_permission_to.required_context.inspect
 
           return @cache[cache_key] unless @cache[cache_key].nil?
 
           @cache[cache_key] = has_permission_to.context?(@context)
         end
 
-        def to_not?(features = nil)
-          !to?(features)
+        def to_not?(required_context = nil)
+          !to?(required_context)
         end
       end
     end
