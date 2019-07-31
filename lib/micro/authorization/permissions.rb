@@ -12,8 +12,8 @@ module Micro
         raise ArgumentError, "#{instance.inspect} must be a #{self.name}"
       end
 
-      def self.new(role_permissions, context: [])
-        Permissions::Model.new(role_permissions, context: context)
+      def self.new(permissions, context: [])
+        Permissions::Model.new(permissions, context)
       end
     end
   end

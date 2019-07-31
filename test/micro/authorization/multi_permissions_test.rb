@@ -82,14 +82,13 @@ class Micro::Authorization::MultiPermissionsTest < Minitest::Test
 
     # ---
 
-    # Deprecated method: required_features
     assert_equal(
-      user_permissions.to('visit').required_context,
+      user_permissions.to('visit').features,
       user_permissions.to('visit').required_features
     )
 
     assert_equal(
-      multi_permissions2.to('visit').required_context,
+      multi_permissions2.to('visit').features,
       multi_permissions2.to('visit').required_features
     )
   end

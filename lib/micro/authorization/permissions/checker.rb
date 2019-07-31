@@ -1,81 +1,81 @@
+# frozen_string_literal: true
+
 module Micro
   module Authorization
     module Permissions
-      module CheckRole
+      module PermitFeature
         extend self
 
-        def call(context, role_permissions, required_features)
-          required_features
-            .all? { |feature| has_permission?(context, role_permissions[feature]) }
+        DOT = '.'.freeze
+        ANY = 'any'.freeze
+        ONLY = 'only'.freeze
+        EXCEPT = 'except'.freeze
+
+        def call(current_context, role, features)
+          features
+            .all? { |feature| permit?(current_context, role[feature]) }
         end
 
         private
 
-        def has_permission?(context, role_permission)
-          return false if role_permission.nil?
+        def permit?(current_context, feature_permission)
+          return true if feature_permission == true
+          return false unless feature_permission
 
-          if role_permission == false || role_permission == true
-            role_permission
-          elsif !(any = role_permission['any']).nil?
+          if !(any = feature_permission[ANY]).nil?
             any
-          elsif only = role_permission['only']
-            check_feature_permission(only, context)
-          elsif except = role_permission['except']
-            !check_feature_permission(except, context)
+          elsif feature_context = feature_permission[ONLY]
+            allow?(feature_context, current_context)
+          elsif feature_context = feature_permission[EXCEPT]
+            !allow?(feature_context, current_context)
           else
             raise NotImplementedError
           end
         end
 
-        def check_feature_permission(context_values, context)
-          Utils.values_as_downcased_strings(context_values).any? do |context_value|
-            Array(context_value.split('.')).all? { |permission| context.include?(permission) }
+        def allow?(feature_context, current_context)
+          Utils.downcased_strings(feature_context).any? do |expectation|
+            Array(expectation.split(DOT))
+              .all? { |expected_value| current_context.include?(expected_value) }
           end
         end
       end
 
-      private_constant :CheckRole
+      private_constant :PermitFeature
 
-      class RoleChecker
-        attr_reader :required_context
+      class BaseChecker
+        attr_reader :features
 
-        def initialize(role, required_context)
-          @role, @required_context = role, required_context
+        alias_method :required_features, :features
+
+        def initialize(role, feature)
+          @role = role
+          @features = Utils.downcased_strings(feature)
         end
 
-        def context?(_context)
+        def context?(_current_context)
           raise NotImplementedError
         end
+      end
 
-        def required_features
-          warn "[DEPRECATION] `#{self.class.name}#required_features` is deprecated.\nPlease use `#{self.class.name}#required_context` instead."
-          required_context
+      class FeatureChecker < BaseChecker
+        def context?(current_context)
+          PermitFeature.call(current_context, @role, @features)
         end
       end
 
-      class SingleRoleChecker < RoleChecker
-        def context?(context)
-          CheckRole.call(context, @role, @required_context)
+      class FeaturesChecker < BaseChecker
+        def context?(current_context)
+          @role.any? { |role| PermitFeature.call(current_context, role, @features) }
         end
       end
 
-      class MultiRoleChecker < RoleChecker
-        def context?(context)
-          @role.any? do |role|
-            CheckRole.call(context, role, @required_context)
-          end
-        end
-      end
-
-      private_constant :RoleChecker, :SingleRoleChecker, :MultiRoleChecker
+      private_constant :BaseChecker, :FeatureChecker, :FeaturesChecker
 
       module Checker
-        def self.of(role, required_context:)
-          checker = role.is_a?(Array) ? MultiRoleChecker : SingleRoleChecker
-          checker.new(
-            role,
-            Utils.values_as_downcased_strings(required_context)
-          )
+        def self.for(role, feature:)
+          checker = role.is_a?(Array) ? FeaturesChecker : FeatureChecker
+          checker.new(role, feature)
         end
       end
     end
