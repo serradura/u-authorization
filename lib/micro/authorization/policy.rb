@@ -22,14 +22,13 @@ module Micro
 
       private
 
-      def permissions; @permissions; end
       def context; @context; end
       def subject; @subject; end
-      def user
-        @user ||=
-          context.is_a?(Hash) ? context[:user] || context[:current_user] : context
+      def permissions; @permissions; end
+      def current_user
+        @current_user ||= context[:user] || context[:current_user]
       end
-      alias_method :current_user, :user
+      alias_method :user, :current_user
     end
   end
 end
