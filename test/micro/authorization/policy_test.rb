@@ -40,8 +40,8 @@ module Micro::Authorization::PolicyTest
     end
 
     def test_policy_result_when_receives_a_subject_in_the_initializer
-      assert CustomPolicyA.new(@user, @record_a).show?
-      refute CustomPolicyA.new(@user, @record_b).show?
+      assert CustomPolicyA.new({user: @user}, @record_a).show?
+      refute CustomPolicyA.new({user: @user}, @record_b).show?
     end
 
     class CustomPolicyB < Micro::Authorization::Policy
@@ -55,7 +55,7 @@ module Micro::Authorization::PolicyTest
         { 'visit' => { 'only' => ['test'] } }, context: ['test']
       )
 
-      policy = CustomPolicyB.new(@user, permissions: permissions)
+      policy = CustomPolicyB.new({user: @user}, permissions: permissions)
 
       assert policy.show?(@record_a) == true && policy.show?(@record_b) == false
     end
