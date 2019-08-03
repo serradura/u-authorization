@@ -13,7 +13,7 @@ module Micro
         end
 
         def to(feature)
-          Permissions::Checker.for(@role, feature: feature)
+          Permissions::Checker.for(@role, feature)
         end
 
         def to?(feature = nil)
