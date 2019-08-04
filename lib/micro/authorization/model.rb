@@ -50,7 +50,7 @@ module Micro
 
       def add_policies(new_policies)
         unless new_policies.is_a?(Hash)
-          raise ArgumentError, "policies must be a Hash (key => #{Policy.name})"
+          raise ArgumentError, "policies must be a Hash. e.g: `{policy_name: #{Policy.name}}`"
         end
 
         new_policies.each(&method(:add_policy))

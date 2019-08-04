@@ -18,7 +18,7 @@ class Micro::Authorization::ModelTest < Minitest::Test
       permissions: @role_permissions,
       context: {
         user: @user,
-        to_permit: ['dashboard', 'controllers', 'sales', 'index']
+        to_permit: ['sales', 'index'] # Rails like [controller_name, action_name]
       }
     )
 
@@ -26,7 +26,7 @@ class Micro::Authorization::ModelTest < Minitest::Test
     refute authorization.permissions.to?('export')
   end
 
-  def test_multi_permissions
+  def test_multiple_permissions
     authorization = Micro::Authorization::Model.build(
       permissions: [
         {
@@ -40,7 +40,7 @@ class Micro::Authorization::ModelTest < Minitest::Test
       ],
       context: {
         user: @user,
-        to_permit: ['dashboard', 'controllers', 'sales', 'index']
+        to_permit: ['dashboard', 'controllers', 'sales', 'index'] # Hanami like
       }
     )
 
@@ -77,7 +77,7 @@ class Micro::Authorization::ModelTest < Minitest::Test
     end
   end
 
-  def test_to
+  def test_policies_using_the_method_to
     authorization = Micro::Authorization::Model.build(
       permissions: {},
       context: { user: @user }
@@ -97,6 +97,19 @@ class Micro::Authorization::ModelTest < Minitest::Test
     authorization.add_policy(:numeric_subject, NumericSubjectPolicy)
 
     assert authorization.to(:numeric_subject, subject: 1).valid?
+  end
+
+  def test_erro_when_add_policies_with_invalid_data
+    authorization = Micro::Authorization::Model.build(
+      permissions: {},
+      context: { user: @user }
+    )
+
+    err = assert_raises(ArgumentError) do
+      authorization.add_policies([:foo, FooPolicy])
+    end
+
+    assert_equal('policies must be a Hash. e.g: `{policy_name: Micro::Authorization::Policy}`', err.message)
   end
 
   def test_default_policy_via_to_method
