@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'micro/authorization/permissions/for_each_feature'
 require 'micro/authorization/permissions/checker'
 require 'micro/authorization/permissions/model'
 

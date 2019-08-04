@@ -1,85 +1,37 @@
 # frozen_string_literal: true
 
-module Micro
-  module Authorization
-    module Permissions
-      module PermitFeature
-        extend self
+module Micro::Authorization
+  module Permissions
+    class RoleChecker
+      attr_reader :features
+      alias_method :required_features, :features
 
-        DOT = '.'.freeze
-        ANY = 'any'.freeze
-        ONLY = 'only'.freeze
-        EXCEPT = 'except'.freeze
+      def initialize(role, feature)
+        @role = role
+        @features = Utils.downcased_strings(feature)
+      end
+    end
 
-        def call(current_context, role, features)
-          features.all? { |feature| permit?(current_context, role[feature]) }
-        end
+    class SingleRoleChecker < RoleChecker
+      def context?(context)
+        Permissions::ForEachFeature.authorize?(@role, inside: context, to: @features)
+      end
+    end
 
-        private
-
-        def permit?(current_context, feature_permission)
-          case feature_permission
-          when true then true
-          when false, nil then false
-          else authorize!(current_context, feature_permission)
-          end
-        end
-
-        def authorize!(current_context, feature_permission)
-          authorize(current_context, feature_permission).tap do |result|
-            raise NotImplementedError if result.nil?
-          end
-        end
-
-        def authorize(current_context, feature_permission)
-          any = feature_permission[ANY]
-          return any unless any.nil?
-
-          feature_context = feature_permission[ONLY]
-          return allow?(current_context, feature_context) if feature_context
-
-          feature_context = feature_permission[EXCEPT]
-          !allow?(current_context, feature_context) if feature_context
-        end
-
-        def allow?(current_context, feature_context)
-          Utils.downcased_strings(feature_context).any? do |expectation|
-            Array(expectation.split(DOT))
-              .all? { |expected_value| current_context.include?(expected_value) }
-          end
+    class MultipleRolesChecker < RoleChecker
+      def context?(context)
+        @role.any? do |role|
+          Permissions::ForEachFeature.authorize?(role, inside: context, to: @features)
         end
       end
+    end
 
-      private_constant :PermitFeature
+    private_constant :RoleChecker
 
-      class SingleRoleChecker
-        attr_reader :features
-
-        alias_method :required_features, :features
-
-        def initialize(role, feature)
-          @role = role
-          @features = Utils.downcased_strings(feature)
-        end
-
-        def context?(current_context)
-          PermitFeature.call(current_context, @role, @features)
-        end
-      end
-
-      class MultiRolesChecker < SingleRoleChecker
-        def context?(current_context)
-          @role.any? { |role| PermitFeature.call(current_context, role, @features) }
-        end
-      end
-
-      private_constant :SingleRoleChecker, :MultiRolesChecker
-
-      module Checker
-        def self.for(role, feature)
-          checker = role.is_a?(Array) ? MultiRolesChecker : SingleRoleChecker
-          checker.new(role, feature)
-        end
+    module Checker
+      def self.for(role, feature)
+        checker = role.is_a?(Array) ? MultipleRolesChecker : SingleRoleChecker
+        checker.new(role, feature)
       end
     end
   end
