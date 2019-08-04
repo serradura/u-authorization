@@ -67,17 +67,17 @@ module Micro
         end
       end
 
-      class MultiRoleChecker < SingleRoleChecker
+      class MultiRolesChecker < SingleRoleChecker
         def context?(current_context)
           @role.any? { |role| PermitFeature.call(current_context, role, @features) }
         end
       end
 
-      private_constant :SingleRoleChecker, :MultiRoleChecker
+      private_constant :SingleRoleChecker, :MultiRolesChecker
 
       module Checker
         def self.for(role, feature)
-          checker = role.is_a?(Array) ? MultiRoleChecker : SingleRoleChecker
+          checker = role.is_a?(Array) ? MultiRolesChecker : SingleRoleChecker
           checker.new(role, feature)
         end
       end

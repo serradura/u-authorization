@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-class Micro::Authorization::MultiPermissionsTest < Minitest::Test
+class Micro::Authorization::Permissions::MultiRolesTest < Minitest::Test
   require 'json'
 
   ROLES = <<-JS
@@ -19,7 +19,7 @@ class Micro::Authorization::MultiPermissionsTest < Minitest::Test
         "visit": { "any": true },
         "export": { "any": true }
       }
-    }
+  }
   JS
 
   def setup
