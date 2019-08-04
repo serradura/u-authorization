@@ -9,7 +9,9 @@ module Micro
       def self.[](instance)
         return instance if instance.is_a?(Permissions::Model)
 
-        raise ArgumentError, "#{instance.inspect} must be a #{self.name}"
+        raise ArgumentError.new(
+          "#{instance.inspect} must be a #{Permissions::Model.name}"
+        )
       end
 
       def self.new(permissions, context: [])
